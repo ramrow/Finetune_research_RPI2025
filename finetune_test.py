@@ -75,10 +75,10 @@ trainer = SFTTrainer(
     train_dataset=dataset,
     peft_config=peft_params,
     # dataset_text_field="text",
-    max_seq_length=None,
-    tokenizer=tokenizer,
+    # max_seq_length=None,
+    # tokenizer=tokenizer,
     args=training_params,
-    packing=False,
+    # packing=False,
 )
 
 trainer.train()
