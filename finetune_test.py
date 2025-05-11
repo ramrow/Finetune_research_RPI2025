@@ -15,7 +15,7 @@ from trl import SFTTrainer
 
 base_model = "codellama/CodeLlama-7b-Python-hf"
 
-test_dataset = ""
+test_dataset = "mlabonne/guanaco-llama2-1k"
 
 new_model = "llama-7b-Python-hf-digit-recog"
 
