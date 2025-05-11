@@ -15,9 +15,9 @@ from trl import SFTTrainer
 
 base_model = "codellama/CodeLlama-7b-Python-hf"
 
-test_dataset = "mlabonne/guanaco-llama2-1k"
+test_dataset = "AdiOO7/llama-2-finance"
 
-new_model = "llama-7b-Python-hf-digit-recog"
+new_model = "llama-7b-Python-hf-finance-sentiment-recognition"
 
 dataset = load_dataset(test_dataset, split="train")
 
