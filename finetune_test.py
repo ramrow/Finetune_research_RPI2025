@@ -6,57 +6,62 @@ from transformers import (
     AutoTokenizer,
     BitsAndBytesConfig,
     TrainingArguments,
-    Trainer,
     pipeline,
     logging,
 )
-from peft import LoraConfig, get_peft_model
-from trl import SFTTrainer, SFTConfig
-from peft import PeftModel, PeftType
+from peft import LoraConfig
+from trl import SFTTrainer
 
-
-def preprocess_function(examples):
+def tokenize(examples):
         output = []
         texts = []
         for line in examples["text"]:
                 temp = line.split("### ")
-                output.append(temp[3])
-                texts.append(temp[1] + "\n" + temp[2])
+                output.append("### " + temp[3])
+                texts.append("### " + temp[1] + "### " + temp[2])
         return tokenizer(texts,
                             text_target=output,
-                            truncation=True, padding="max_length",
-                            padding_side="right")
-
+                            truncation=True,
+                            padding="max_length",
+                            max_length=2048,
+                            return_tensors="pt")
 
 
 model_name = "codellama/CodeLlama-7b-Python-hf"
 data_name = "AdiOO7/llama-2-finance"
 new_model = "llama-7b-Python-hf-finance-sentiment-recognition"
 
-
-quant_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
-model = AutoModelForCausalLM.from_pretrained(model_name,
-                                                quantization_config=quant_config,
-                                                device_map="auto",
-                                                )
-
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+dataset = load_dataset(data_name, split="train")
+tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
-lora_config = LoraConfig(
+tokenized_dataset = dataset.map(tokenize, batched=True, remove_columns=dataset.column_names)
+tokenized_dataset = tokenized_dataset.rename_column("input_ids", "labels")
+tokenized_dataset.set_format(type="torch", columns=["labels", "attention_mask"])
+
+compute_dtype = getattr(torch, "float16")
+quant_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=compute_dtype,
+    bnb_4bit_use_double_quant=False,
+)
+
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    quantization_config=quant_config,
+    device_map={"": 0}
+)
+model.config.use_cache = False
+model.config.pretraining_tp = 1
+
+peft_params = LoraConfig(
     lora_alpha=16,
     lora_dropout=0.1,
     r=64,
     bias="none",
     task_type="CAUSAL_LM",
-)
-model = get_peft_model(model, lora_config)
-
-dataset = load_dataset(data_name, split="train")
-tokenized_dataset = dataset.map(
-    preprocess_function,
-    batched=True,
 )
 
 training_params = TrainingArguments(
@@ -76,12 +81,15 @@ training_params = TrainingArguments(
     warmup_ratio=0.03,
     group_by_length=True,
     lr_scheduler_type="constant",
-    report_to="tensorboard"
+    report_to="tensorboard",
+    label_names=["labels"],  # Important for custom label columns
 )
 
-trainer = Trainer(
+trainer = SFTTrainer(
     model=model,
     args=training_params,
+    peft_config=peft_params,
+
     train_dataset=tokenized_dataset
 )
 trainer.train()
