@@ -23,7 +23,7 @@ def tokenize(examples):
                             text_target=output,
                             truncation=True,
                             padding="max_length",
-                            max_length=8000,
+                            max_length=5000,
                             return_tensors="pt")
 
 
@@ -37,7 +37,7 @@ tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
 tokenized_dataset = dataset.map(tokenize, batched=True, remove_columns=dataset.column_names)
-print(tokenized_dataset['labels'].shape, tokenized_dataset['attention_mask'].shape, tokenized_dataset['input_ids'].shape)
+print(len(tokenized_dataset['labels']), len(tokenized_dataset['attention_mask']), len(tokenized_dataset['input_ids']))
 # tokenized_dataset = tokenized_dataset.rename_column("input_ids", "labels")
 # tokenized_dataset.set_format(type="torch", columns=["labels", "attention_mask"])
 
