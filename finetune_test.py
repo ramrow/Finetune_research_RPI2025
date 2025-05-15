@@ -10,7 +10,7 @@ from transformers import (
     pipeline,
     logging,
 )
-from peft import LoraConfig
+from peft import LoraConfig,get_peft_model
 from trl import SFTTrainer
 
 # def tokenize(examples):
@@ -63,16 +63,26 @@ model = AutoModelForCausalLM.from_pretrained(
     quantization_config=quant_config,
     device_map={"": 0}
 )
-model.config.use_cache = False
-model.config.pretraining_tp = 1
+# model.config.use_cache = False
+# model.config.pretraining_tp = 1
 
-peft_params = LoraConfig(
+lora_config = LoraConfig(
     lora_alpha=16,
     lora_dropout=0.1,
     r=64,
     bias="none",
     task_type="CAUSAL_LM",
 )
+model = get_peft_model(model, lora_config)
+
+
+# peft_params = LoraConfig(
+#     lora_alpha=16,
+#     lora_dropout=0.1,
+#     r=64,
+#     bias="none",
+#     task_type="CAUSAL_LM",
+# )
 
 training_params = TrainingArguments(
     output_dir="./results",
@@ -98,7 +108,7 @@ training_params = TrainingArguments(
 trainer = Trainer(
     model=model,
     args=training_params,
-    peft_config=peft_params,
+    # peft_config=peft_params,
 
     train_dataset=tokenized_dataset
 )
