@@ -10,14 +10,16 @@ from transformers import (
     logging,
 )
 from peft import LoraConfig
-from trl import SFTTrainer
+from trl import SFTTrainer, SFTConfig
 
 
 base_model = "codellama/CodeLlama-7b-Python-hf"
 
-test_dataset = "AdiOO7/llama-2-finance"
+test_dataset = "mlabonne/guanaco-llama2-1k"
 
-new_model = "llama-7b-Python-hf-finance-sentiment-recognition"
+# new_model = "llama-7b-Python-hf-finance-sentiment-recognition"
+new_model = "llama-7b-Python-hf-test-guanaco"
+
 
 dataset = load_dataset(test_dataset, split="train")
 
