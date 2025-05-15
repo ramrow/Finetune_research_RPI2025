@@ -79,7 +79,7 @@ training_params = TrainingArguments(
     report_to="tensorboard"
 )
 
-trainer = SFTTrainer(
+trainer = Trainer(
     model=model,
     args=training_params,
     train_dataset=tokenized_dataset
