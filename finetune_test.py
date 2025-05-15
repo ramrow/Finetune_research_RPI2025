@@ -11,6 +11,26 @@ from transformers import (
 )
 from peft import LoraConfig
 from trl import SFTTrainer, SFTConfig
+from peft import PeftModel, PeftType
+
+
+def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+    """
+    Compute training loss and additionally compute token accuracies
+    """
+    (loss, outputs) = super().compute_loss(
+        model, inputs, return_outputs=True, num_items_in_batch=num_items_in_batch
+    )
+
+    # Compute token accuracy if we have labels and if the model is not using Liger (no logits)
+    if "labels" in inputs and not self.args.use_liger:
+        if isinstance(model, PeftModel) and model.peft_type == PeftType.PROMPT_TUNING:
+            num_virtual_tokens = model.peft_config["default"].num_virtual_tokens
+            shift_logits = outputs.logits[..., :-(1+num_virtual_tokens), :].contiguous()
+        else:
+            shift_logits = outputs.logits[..., :-1, :].contiguous()
+        
+        shift_labels = inputs["labels"][..., 1:].contiguous()
 
 
 base_model = "codellama/CodeLlama-7b-Python-hf"
@@ -77,6 +97,7 @@ trainer = SFTTrainer(
     train_dataset=dataset,
     peft_config=peft_params,
     processing_class=tokenizer,
+    compute_loss_func=compute_loss,
     # dataset_text_field="text",
     # max_seq_length=None,
     # tokenizer=tokenizer,
