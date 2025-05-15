@@ -23,7 +23,7 @@ def tokenize(examples):
                             text_target=output,
                             truncation=True,
                             padding="max_length",
-                            max_length=8000
+                            max_length=8000,
                             return_tensors="pt")
 
 
