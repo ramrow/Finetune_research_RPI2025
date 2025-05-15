@@ -37,8 +37,8 @@ tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
 tokenized_dataset = dataset.map(tokenize, batched=True, remove_columns=dataset.column_names)
-tokenized_dataset = tokenized_dataset.rename_column("input_ids", "labels")
-tokenized_dataset.set_format(type="torch", columns=["labels", "attention_mask"])
+# tokenized_dataset = tokenized_dataset.rename_column("input_ids", "labels")
+# tokenized_dataset.set_format(type="torch", columns=["labels", "attention_mask"])
 
 compute_dtype = getattr(torch, "float16")
 quant_config = BitsAndBytesConfig(
@@ -82,7 +82,7 @@ training_params = TrainingArguments(
     group_by_length=True,
     lr_scheduler_type="constant",
     report_to="tensorboard",
-    label_names=["labels"],  # Important for custom label columns
+    # label_names=["labels"],  # Important for custom label columns
 )
 
 trainer = SFTTrainer(
