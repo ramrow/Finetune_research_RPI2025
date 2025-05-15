@@ -6,6 +6,7 @@ from transformers import (
     AutoTokenizer,
     BitsAndBytesConfig,
     TrainingArguments,
+    Trainer,
     pipeline,
     logging,
 )
@@ -94,7 +95,7 @@ training_params = TrainingArguments(
     # label_names=["labels"],  # Important for custom label columns
 )
 
-trainer = SFTTrainer(
+trainer = Trainer(
     model=model,
     args=training_params,
     peft_config=peft_params,
