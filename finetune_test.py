@@ -45,9 +45,9 @@ tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
 tokenized_dataset = dataset.map(tokenize, batched=True, remove_columns=dataset.column_names)
-print(len(tokenized_dataset['labels']), len(tokenized_dataset['attention_mask']), len(tokenized_dataset['input_ids']))
+# print(len(tokenized_dataset['labels']), len(tokenized_dataset['attention_mask']), len(tokenized_dataset['input_ids']))
 tokenized_dataset = tokenized_dataset.rename_column("input_ids", "labels")
-# tokenized_dataset.set_format(type="torch", columns=["labels", "attention_mask"])
+tokenized_dataset.set_format(type="torch", columns=["labels", "attention_mask"])
 
 compute_dtype = getattr(torch, "float16")
 quant_config = BitsAndBytesConfig(
