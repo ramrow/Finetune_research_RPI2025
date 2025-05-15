@@ -97,7 +97,7 @@ trainer = SFTTrainer(
     train_dataset=dataset,
     peft_config=peft_params,
     processing_class=tokenizer,
-    compute_loss_func=compute_loss,
+    compute_loss_func=compute_loss(model,inputs=dataset),
     # dataset_text_field="text",
     # max_seq_length=None,
     # tokenizer=tokenizer,
