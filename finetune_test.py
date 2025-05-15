@@ -63,26 +63,16 @@ model = AutoModelForCausalLM.from_pretrained(
     quantization_config=quant_config,
     device_map={"": 0}
 )
-# model.config.use_cache = False
-# model.config.pretraining_tp = 1
+model.config.use_cache = False
+model.config.pretraining_tp = 1
 
-lora_config = LoraConfig(
+peft_params = LoraConfig(
     lora_alpha=16,
     lora_dropout=0.1,
     r=64,
     bias="none",
     task_type="CAUSAL_LM",
 )
-model = get_peft_model(model, lora_config)
-
-
-# peft_params = LoraConfig(
-#     lora_alpha=16,
-#     lora_dropout=0.1,
-#     r=64,
-#     bias="none",
-#     task_type="CAUSAL_LM",
-# )
 
 training_params = TrainingArguments(
     output_dir="./results",
@@ -105,12 +95,12 @@ training_params = TrainingArguments(
     # label_names=["labels"],  # Important for custom label columns
 )
 
-trainer = Trainer(
+trainer = SFTTrainer(
     model=model,
     args=training_params,
-    # peft_config=peft_params,
-
-    train_dataset=tokenized_dataset
+    peft_config=peft_params,
+    processing_class=tokenizer,
+    train_dataset=dataset
 )
 trainer.train()
 trainer.model.save_pretrained(new_model)
