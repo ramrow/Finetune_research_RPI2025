@@ -112,8 +112,8 @@ trainer = SFTTrainer(
     model=model,
     args=training_params,
     peft_config=peft_params,
-    # processing_class=tokenizer,
-    train_dataset=tokenized_dataset
+    processing_class=tokenizer,
+    train_dataset=dataset
 )
 trainer.train()
 trainer.model.save_pretrained(new_model)
