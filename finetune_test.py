@@ -11,8 +11,8 @@ from transformers import (
     pipeline,
     logging,
 )
-from peft import LoraConfig,PeftModel,PeftType
-from trl import SFTTrainer, SFTConfig
+from peft import LoraConfig
+from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 import types
 
 
@@ -45,6 +45,7 @@ model.config.use_cache = False
 model.config.pretraining_tp = 1
 
 tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
+tokenizer.return_tensors = "pt"
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
