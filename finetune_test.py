@@ -31,7 +31,7 @@ def tokenize(example):
         example["text"],
         truncation=True,
         padding="max_length",
-        max_length=2048,
+        max_length=512,
         return_tensors="pt"
     )
 
@@ -92,7 +92,7 @@ training_params = TrainingArguments(
     group_by_length=True,
     lr_scheduler_type="constant",
     report_to="tensorboard",
-    # label_names=["labels"],  # Important for custom label columns
+    label_names=["labels"]  # Important for custom label columns
 )
 
 trainer = SFTTrainer(
