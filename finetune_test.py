@@ -68,7 +68,6 @@ training_params = TrainingArguments(
     group_by_length=True,
     lr_scheduler_type="constant",
     report_to="tensorboard",
-    label_names=["text"]
 )
 
 trainer = SFTTrainer(
