@@ -684,7 +684,7 @@ class SFTTrainer(Trainer):
             mask = shift_labels != -100
 
             # Calculate accuracy only on non-padding tokens
-            print(predictions,shift_labels)
+            print(predictions.shape,shift_labels.shape)
 
             correct_predictions = (predictions == shift_labels) & mask
             total_tokens = mask.sum()
