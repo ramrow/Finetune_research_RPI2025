@@ -12,7 +12,7 @@ from transformers import (
     logging,
 )
 from peft import LoraConfig,PeftModel,PeftType
-from sft import SFTTrainer, SFTConfig
+from trl import SFTTrainer, SFTConfig
 import types
 
 
@@ -76,7 +76,7 @@ training_args = SFTConfig(
     lr_scheduler_type="constant",
     report_to="tensorboard",
     label_names=["text"],
-    packing=False,
+    packing=True,
     max_seq_length=None,
 )
 
