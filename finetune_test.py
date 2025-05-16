@@ -15,7 +15,7 @@ from peft import LoraConfig,get_peft_model
 from trl import SFTTrainer
 
 
-base_model = "codellama/CodeLlama-7b-Python-hf"
+base_model = "meta-llama/Llama-2-7b-chat-hf"
 # New instruction dataset
 guanaco_dataset = "mlabonne/guanaco-llama2-1k"
 # Fine-tuned model
