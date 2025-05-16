@@ -27,13 +27,26 @@ from trl import SFTTrainer
 #                             max_length=5000,
 #                             return_tensors="pt")
 def tokenize(example):
-    return tokenizer(
-        example["text"],
-        truncation=True,
-        padding="max_length",
-        max_length=512,
-        return_tensors="pt"
-    )
+        # Tokenize the full prompt from the "texts" field
+        tokenized = tokenizer(
+            example["texts"],
+            padding="max_length",
+            truncation=True,
+            max_length=512,  # You can increase this based on model context window and GPU memory
+        )
+        
+        # For causal LM, labels should match input_ids
+        tokenized["labels"] = tokenized["input_ids"].copy()
+        return tokenized
+
+# def tokenize(example):
+#     return tokenizer(
+#         example["text"],
+#         truncation=True,
+#         padding="max_length",
+#         max_length=512,
+#         return_tensors="pt"
+#     )
 
 
 model_name = "codellama/CodeLlama-7b-Python-hf"
@@ -47,8 +60,8 @@ tokenizer.padding_side = "right"
 
 tokenized_dataset = dataset.map(tokenize, batched=True, remove_columns=dataset.column_names)
 # print(len(tokenized_dataset['labels']), len(tokenized_dataset['attention_mask']), len(tokenized_dataset['input_ids']))
-tokenized_dataset = tokenized_dataset.rename_column("input_ids", "labels")
-tokenized_dataset.set_format(type="torch", columns=["labels", "attention_mask"])
+# tokenized_dataset = tokenized_dataset.rename_column("input_ids", "labels")
+# tokenized_dataset.set_format(type="torch", columns=["labels", "attention_mask"])
 
 compute_dtype = getattr(torch, "float16")
 quant_config = BitsAndBytesConfig(
@@ -92,15 +105,15 @@ training_params = TrainingArguments(
     group_by_length=True,
     lr_scheduler_type="constant",
     report_to="tensorboard",
-    label_names=["labels"]  # Important for custom label columns
+    # label_names=["labels"]  # Important for custom label columns
 )
 
 trainer = SFTTrainer(
     model=model,
     args=training_params,
     peft_config=peft_params,
-    processing_class=tokenizer,
-    train_dataset=dataset
+    # processing_class=tokenizer,
+    train_dataset=tokenized_dataset
 )
 trainer.train()
 trainer.model.save_pretrained(new_model)
