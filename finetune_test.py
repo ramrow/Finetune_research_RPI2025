@@ -29,7 +29,7 @@ from trl import SFTTrainer
 def tokenize(example):
         # Tokenize the full prompt from the "texts" field
         tokenized = tokenizer(
-            example["texts"],
+            example["text"],
             padding="max_length",
             truncation=True,
             max_length=512,  # You can increase this based on model context window and GPU memory
