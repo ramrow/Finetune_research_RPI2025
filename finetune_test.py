@@ -12,7 +12,7 @@ from transformers import (
     logging,
 )
 from peft import LoraConfig,get_peft_model
-from trl import SFTTrainer
+from trl import SFTTrainer, SFTConfig
 
 
 base_model = "NousResearch/Llama-2-7b-chat-hf"
@@ -50,7 +50,28 @@ peft_params = LoraConfig(
     task_type="CAUSAL_LM",
 )
 
-training_params = TrainingArguments(
+# training_params = TrainingArguments(
+#     output_dir="./results",
+#     num_train_epochs=1,
+#     per_device_train_batch_size=4,
+#     gradient_accumulation_steps=1,
+#     optim="paged_adamw_32bit",
+#     save_steps=25,
+#     logging_steps=25,
+#     learning_rate=2e-4,
+#     weight_decay=0.001,
+#     fp16=False,
+#     bf16=False,
+#     max_grad_norm=0.3,
+#     max_steps=-1,
+#     warmup_ratio=0.03,
+#     group_by_length=True,
+#     lr_scheduler_type="constant",
+#     report_to="tensorboard",
+#     label_names=["text"]
+# )
+
+training_args = SFTConfig(
     output_dir="./results",
     num_train_epochs=1,
     per_device_train_batch_size=4,
@@ -68,6 +89,10 @@ training_params = TrainingArguments(
     group_by_length=True,
     lr_scheduler_type="constant",
     report_to="tensorboard",
+    # label_names=["text"],
+    packing=False,
+    max_seq_length=None,
+    dataset_text_field="text"
 )
 
 trainer = SFTTrainer(
@@ -77,7 +102,7 @@ trainer = SFTTrainer(
     # dataset_text_field="text",
     # max_seq_length=None,
     processing_class=tokenizer,
-    args=training_params,
+    args=training_args,
     # packing=False,
 )
 
