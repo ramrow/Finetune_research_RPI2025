@@ -92,7 +92,6 @@ training_args = SFTConfig(
     label_names=["text"],
     packing=False,
     max_seq_length=None,
-    dataset_text_field="text"
 )
 
 trainer = SFTTrainer(
