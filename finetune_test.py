@@ -81,3 +81,7 @@ trainer = SFTTrainer(
     args=training_params,
     # packing=False,
 )
+
+trainer.train()
+trainer.model.save_pretrained(new_model)
+trainer.tokenizer.save_pretrained(new_model)
