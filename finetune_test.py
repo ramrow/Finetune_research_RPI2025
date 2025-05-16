@@ -15,7 +15,7 @@ from peft import LoraConfig,get_peft_model
 from trl import SFTTrainer, SFTConfig
 
 
-base_model = "NousResearch/Llama-2-7b-chat-hf"
+base_model = "unsloth/Llama-3.2-1B"
 # New instruction dataset
 guanaco_dataset = "mlabonne/guanaco-llama2-1k"
 # Fine-tuned model
@@ -74,7 +74,7 @@ peft_params = LoraConfig(
 training_args = SFTConfig(
     output_dir="./results",
     num_train_epochs=1,
-    per_device_train_batch_size=12,
+    per_device_train_batch_size=4,
     gradient_accumulation_steps=1,
     optim="paged_adamw_32bit",
     save_steps=25,
