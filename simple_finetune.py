@@ -24,7 +24,7 @@ trainer = Trainer(
     model=model,
     args=training_args,
     train_dataset=tokenized_dataset["train"],
-    eval_dataset=tokenized_dataset["test"],
+    # eval_dataset=tokenized_dataset["test"],
 )
 trainer.train()
 trainer.model.save_pretrained("")
