@@ -6,7 +6,7 @@ model_name = "NousResearch/Llama-2-7b-chat-hf"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
 
-dataset = load_dataset("AdiOO7/llama-2-finance")
+dataset = load_dataset("hetalshah1981/llama2_finetune_offerings")
 def preprocess_function(examples):
     return tokenizer(examples["text"], truncation=True, padding=True)
 tokenized_dataset = dataset.map(preprocess_function, batched=True)
@@ -24,7 +24,7 @@ trainer = Trainer(
     model=model,
     args=training_args,
     train_dataset=tokenized_dataset["train"],
-    # eval_dataset=tokenized_dataset["test"],
+    eval_dataset=tokenized_dataset["test"],
 )
 trainer.train()
 trainer.model.save_pretrained("")
