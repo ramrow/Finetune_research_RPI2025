@@ -21,7 +21,7 @@ import types
 
 
 
-base_model = "codellama/CodeLlama-7b-Instruct-hf"
+base_model = "NousResearch/Llama-2-7b-chat-hf"
 # New instruction dataset
 guanaco_dataset = "mlabonne/guanaco-llama2-1k"
 # Fine-tuned model
@@ -76,8 +76,8 @@ training_args = SFTConfig(
     group_by_length=True,
     lr_scheduler_type="constant",
     report_to="tensorboard",
-    label_names=["text"],
-    packing=True,
+    dataset_text_field="text",
+    packing=False,
     max_seq_length=None,
 )
 
