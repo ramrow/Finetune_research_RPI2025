@@ -57,15 +57,15 @@ peft_params = LoraConfig(
     task_type="CAUSAL_LM",
 )
 
-collator = DataCollatorForLanguageModeling(
-    tokenizer=tokenizer,
-    mlm=False
-)
+# collator = DataCollatorForLanguageModeling(
+#     tokenizer=tokenizer,
+#     mlm=False
+# )
 
 training_args = SFTConfig(
     output_dir="./results",
     num_train_epochs=1,
-    per_device_train_batch_size=4,
+    per_device_train_batch_size=1,
     gradient_accumulation_steps=1,
     optim="paged_adamw_32bit",
     save_steps=25,
@@ -90,7 +90,7 @@ trainer = SFTTrainer(
     train_dataset=dataset,
     peft_config=peft_params,
     args=training_args,
-    data_collator=collator
+    processing_class=tokenizer
 )
 
 trainer.train()
