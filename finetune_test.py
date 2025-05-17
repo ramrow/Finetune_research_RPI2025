@@ -21,7 +21,7 @@ import types
 
 
 
-base_model = "NousResearch/Llama-2-7b-chat-hf"
+base_model = "codellama/CodeLlama-7b-Instruct-hf"
 # New instruction dataset
 guanaco_dataset = "mlabonne/guanaco-llama2-1k"
 # Fine-tuned model
