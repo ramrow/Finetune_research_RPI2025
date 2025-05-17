@@ -17,7 +17,7 @@ training_args = TrainingArguments(
     eval_strategy="epoch",
     learning_rate=2e-5, 
     per_device_train_batch_size=16,
-    num_train_epochs=3,
+    num_train_epochs=1,
 )
 
 trainer = Trainer(
@@ -27,5 +27,7 @@ trainer = Trainer(
     eval_dataset=tokenized_dataset["test"],
 )
 trainer.train()
-trainer.model.save_pretrained("")
-trainer.tokenizer.save_pretrained("")
+trainer.model.save_pretrained("llama-7b-python-simple")
+trainer.tokenizer.save_pretrained("llama-7b-python-simple")
+results = trainer.evaluate()
+print(f"Validation Accuracy: {results['eval_accuracy']}")
