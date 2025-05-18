@@ -95,4 +95,4 @@ trainer = SFTTrainer(
 
 trainer.train()
 trainer.model.save_pretrained(new_model)
-trainer.tokenizer.save_pretrained(new_model)
+trainer.processing_class.save_pretrained(new_model)
