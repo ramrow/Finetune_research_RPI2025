@@ -52,13 +52,13 @@ peft_params = LoraConfig(
 
 training_args = SFTConfig(
     output_dir="./results",
-    num_train_epochs=3,
+    num_train_epochs=2,
     per_device_train_batch_size=1,
     gradient_accumulation_steps=1,
     optim="paged_adamw_32bit",
-    save_steps=50,
-    logging_steps=50,
-    learning_rate=2e-4,
+    save_steps=25,
+    logging_steps=25,
+    learning_rate=3e-4,
     weight_decay=0.001,
     fp16=False,
     bf16=False,
