@@ -42,7 +42,7 @@ training_args.per_device_eval_batch_size=1
 #     predictions = np.argmax(logits, axis=-1)
 #     return metric.compute(predictions=predictions, references=labels)
 
-peft_params = LoraConfig(
+peft_p = LoraConfig(
     lora_alpha=16,
     lora_dropout=0.1,
     r=64,
@@ -50,11 +50,11 @@ peft_params = LoraConfig(
     task_type="CAUSAL_LM",
 )
 
-trainer = Trainer(
+trainer = SFTTrainer(
     model=model,
     args=training_args,
     eval_dataset=dataset,
-    peft_config = peft_params
+    peft_config = peft_p
     # compute_metrics=compute_metrics,
 )
 
