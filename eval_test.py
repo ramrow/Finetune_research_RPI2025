@@ -29,7 +29,7 @@ def compute_metrics(eval_pred):
     predictions = np.argmax(logits, axis=-1)
     return metric.compute(predictions=predictions, references=labels)
 
-tokenized_datasets = dataset.map(tokenize_function, batched=True)
+tokenized_datasets = dataset.map(tokenize_function, remove_columns=dataset.column_names, batched=True)
 
 quant_config = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -51,8 +51,6 @@ peft_params = LoraConfig(
 
 training_args = SFTConfig(
     output_dir="./eval_results",
-    do_eval=True,
-    do_train=False,
     num_train_epochs=2,
     per_device_train_batch_size=1,
     gradient_accumulation_steps=1,
@@ -69,7 +67,8 @@ training_args = SFTConfig(
     group_by_length=True,
     lr_scheduler_type="constant",
     report_to="tensorboard",
-    
+    packing=False,
+    max_seq_length=None,
 )
 
 
