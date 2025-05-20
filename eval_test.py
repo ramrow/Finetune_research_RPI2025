@@ -1,5 +1,7 @@
 from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments, Trainer, BitsAndBytesConfig
+from trl import SFTConfig,SFTTrainer
+from peft import LoraConfig
 import numpy as np
 import evaluate
 import torch
@@ -39,8 +41,18 @@ quant_config = BitsAndBytesConfig(
 model = AutoModelForSequenceClassification.from_pretrained("NousResearch/Llama-2-7b-chat-hf", quantization_config=quant_config, device_map={"": 0}
 )
 
-training_args = TrainingArguments(
+peft_params = LoraConfig(
+    lora_alpha=16,
+    lora_dropout=0.1,
+    r=64,
+    bias="none",
+    task_type="CAUSAL_LM",
+)
+
+training_args = SFTConfig(
     output_dir="./eval_results",
+    do_eval=True,
+    do_train=False,
     num_train_epochs=2,
     per_device_train_batch_size=1,
     gradient_accumulation_steps=1,
@@ -57,15 +69,17 @@ training_args = TrainingArguments(
     group_by_length=True,
     lr_scheduler_type="constant",
     report_to="tensorboard",
+    
 )
 
 
-trainer = Trainer(
+trainer = SFTTrainer(
     model=model,
     args=training_args,
     eval_dataset=tokenized_datasets,
     train_dataset=tokenized_datasets,
     compute_metrics=compute_metrics,
+    peft_config=peft_params
 )
 
 trainer.evaluate()
