@@ -76,7 +76,6 @@ training_args = SFTConfig(
 trainer = SFTTrainer(
     model=model,
     train_dataset=dataset,
-    eval_dataset=dataset,
     peft_config=peft_params,
     args=training_args,
     processing_class=tokenizer
