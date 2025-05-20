@@ -6,17 +6,19 @@ import numpy as np
 import evaluate
 import torch
 
+class CustomTrainer(Trainer):
+    def compute_loss(self, model, inputs, return_outputs=False):
+        outputs = model(
+            input_ids=inputs['input_ids'],
+            attention_mask=inputs['attention_mask'],
+            token_type_ids=inputs['token_type_ids']
+        )
+        loss = torch.nn.BCEWithLogitsLoss()(outputs['logits'].float(), inputs['labels'].float())
+        return (loss, outputs) if return_outputs else loss
+
+
+
 temp_data = load_dataset("AdiOO7/llama-2-finance", split="train")
-# print(temp_data)
-# dataset = dict()
-# tmp1 = []
-# tmp2 = []
-# for line in temp_data["text"]:
-#     temp = line.split(" ### Assistant: ")
-#     tmp1.append(temp[0])
-#     tmp2.append(temp[1][:-1])
-# dataset["text"] = tmp1
-# dataset["class"] = tmp2
 
 tokenizer = AutoTokenizer.from_pretrained("NousResearch/Llama-2-7b-chat-hf")
 
@@ -51,7 +53,7 @@ print(tokenized_datasets)
 model = AutoModelForSequenceClassification.from_pretrained("NousResearch/Llama-2-7b-chat-hf")
 training_args = TrainingArguments(output_dir="./pre_result", per_device_eval_batch_size=1)
 
-trainer = Trainer(
+trainer = CustomTrainer(
     model=model,
     args=training_args,
     eval_dataset=tokenized_datasets,
