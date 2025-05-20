@@ -64,6 +64,7 @@ trainer = Trainer(
     model=model,
     args=training_args,
     eval_dataset=tokenized_datasets,
+    train_dataset=tokenized_datasets,
     compute_metrics=compute_metrics,
 )
 
