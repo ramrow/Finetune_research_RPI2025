@@ -26,7 +26,7 @@ tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
 
-training_args = SFTConfig(
+training_args = TrainingArguments(
     output_dir="./eval_results",
     per_device_eval_batch_size=1,
     do_train=False,
@@ -34,7 +34,7 @@ training_args = SFTConfig(
     report_to="none"
 )
 
-trainer = SFTTrainer(
+trainer = Trainer(
     model=model,
     args=training_args,
     eval_dataset=dataset,
