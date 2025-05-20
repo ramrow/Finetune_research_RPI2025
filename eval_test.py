@@ -31,7 +31,8 @@ training_args = TrainingArguments(
     per_device_eval_batch_size=1,
     do_train=False,
     do_eval=True,
-    report_to="none"
+    report_to="none",
+    remove_unused_columns=False
 )
 
 trainer = Trainer(
