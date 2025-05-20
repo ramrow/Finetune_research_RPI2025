@@ -48,7 +48,7 @@ def compute_metrics(eval_pred):
 
 tokenized_datasets = temp_data.map(preprocess_function, batched=True)
 model = AutoModelForSequenceClassification.from_pretrained("NousResearch/Llama-2-7b-chat-hf")
-training_args = TrainingArguments(output_dir="./pre_result", evaluation_strategy="epoch")
+training_args = TrainingArguments(output_dir="./pre_result")
 
 trainer = Trainer(
     model=model,
