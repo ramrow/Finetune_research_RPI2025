@@ -32,9 +32,9 @@ def preprocess_function(examples):
         tmp2.append(temp[1][:-1])
     dataset["text"] = tmp1
     dataset["class"] = tmp2
-    model_inputs = tokenizer(dataset["text"], truncation=True)
+    model_inputs = tokenizer(dataset["text"], padding="max_length", truncation=True)
 
-    labels = tokenizer(text_target=dataset["class"], truncation=True)
+    labels = tokenizer(text_target=dataset["class"], padding="max_length", truncation=True)
 
     model_inputs["labels"] = labels["input_ids"]
     return model_inputs
