@@ -47,6 +47,7 @@ def compute_metrics(eval_pred):
     return metric.compute(predictions=predictions, references=labels)
 
 tokenized_datasets = temp_data.map(preprocess_function, batched=True)
+print(tokenized_datasets)
 model = AutoModelForSequenceClassification.from_pretrained("NousResearch/Llama-2-7b-chat-hf")
 training_args = TrainingArguments(output_dir="./pre_result", per_device_eval_batch_size=1)
 
