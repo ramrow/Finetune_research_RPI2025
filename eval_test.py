@@ -10,6 +10,8 @@ from transformers import (
     BitsAndBytesConfig
 )
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
+from peft import LoraConfig
+
 import numpy as np
 
 # Step 1: Load the dataset
@@ -39,11 +41,19 @@ model.config.pretraining_tp = 1
 #     predictions = np.argmax(logits, axis=-1)
 #     return metric.compute(predictions=predictions, references=labels)
 
+peft_params = LoraConfig(
+    lora_alpha=16,
+    lora_dropout=0.1,
+    r=64,
+    bias="none",
+    task_type="CAUSAL_LM",
+)
 
 trainer = Trainer(
     model=model,
     args=training_args,
     eval_dataset=dataset,
+    peft_params = peft_params
     # compute_metrics=compute_metrics,
 )
 
