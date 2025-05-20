@@ -6,39 +6,45 @@ from transformers import (
     AutoModelForCausalLM,
     DataCollatorForLanguageModeling,
     Trainer,
-    TrainingArguments
+    TrainingArguments,
+    BitsAndBytesConfig
 )
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
+import numpy as np
 
 # Step 1: Load the dataset
 dataset = load_dataset("AdiOO7/llama-2-finance")
 
 # Step 2: Load the tokenizer and model
 base_model = "NousResearch/Llama-2-7b-chat-hf"
+
+training_args = TrainingArguments("test_trainer")
+compute_dtype = getattr(torch, "float16")
+quant_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=compute_dtype,
+    bnb_4bit_use_double_quant=False,
+)
 model = AutoModelForCausalLM.from_pretrained(
     base_model,
-    device_map="auto",
-    torch_dtype=torch.float16,
+    quantization_config=quant_config,
+    device_map={"": 0}
 )
-tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
-tokenizer.return_tensors = "pt"
-tokenizer.pad_token = tokenizer.eos_token
-tokenizer.padding_side = "right"
+model.config.use_cache = False
+model.config.pretraining_tp = 1
 
+# def compute_metrics(eval_pred):
+#     logits, labels = eval_pred
+#     predictions = np.argmax(logits, axis=-1)
+#     return metric.compute(predictions=predictions, references=labels)
 
-training_args = TrainingArguments(
-    output_dir="./eval_results",
-    per_device_eval_batch_size=1,
-    do_train=False,
-    do_eval=True,
-    report_to="none",
-    remove_unused_columns=False
-)
 
 trainer = Trainer(
     model=model,
     args=training_args,
     eval_dataset=dataset,
-    processing_class=tokenizer,
+    # compute_metrics=compute_metrics,
 )
+
 trainer.evaluate()
