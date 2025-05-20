@@ -14,7 +14,7 @@ tokenizer.padding_side = "right"
 def tokenize_function(examples):
     t1 = []
     t2 = []
-    for line in dataset["text"]:
+    for line in examples["text"]:
         temp = line.split(" ### Assistant: ")
         t1.append(temp[0])
         t2.append(temp[1])
