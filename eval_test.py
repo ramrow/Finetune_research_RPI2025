@@ -21,8 +21,9 @@ def tokenize_function(examples):
         t1.append(temp[0])
         t2.append(temp[1])
 
-
-    return tokenizer(t1,t2, padding="max_length", truncation=True)
+    t = tokenizer(t1,padding="max_length", truncation=True)
+    t["labels"] =  t2
+    return t
 
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
