@@ -35,7 +35,8 @@ model = AutoModelForCausalLM.from_pretrained(
 )
 model.config.use_cache = False
 model.config.pretraining_tp = 1
-
+training_args.output_dir = "./eval_results"
+training_args.per_device_eval_batch_size=1
 # def compute_metrics(eval_pred):
 #     logits, labels = eval_pred
 #     predictions = np.argmax(logits, axis=-1)
@@ -53,7 +54,7 @@ trainer = Trainer(
     model=model,
     args=training_args,
     eval_dataset=dataset,
-    peft_params = peft_params
+    peft_config = peft_params
     # compute_metrics=compute_metrics,
 )
 
