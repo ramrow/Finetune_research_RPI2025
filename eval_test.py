@@ -14,10 +14,13 @@ tokenizer.padding_side = "right"
 def tokenize_function(examples):
     t1 = []
     t2 = []
+    for line in dataset["text"]:
+        temp = line.split(" ### Assistant: ")
+        t1.append(temp[0])
+        t2.append(temp[1])
 
 
-
-    return tokenizer(examples["text"], padding="max_length", truncation=True)
+    return tokenizer(t1,t2, padding="max_length", truncation=True)
 
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
@@ -54,9 +57,6 @@ training_args = TrainingArguments(
     group_by_length=True,
     lr_scheduler_type="constant",
     report_to="tensorboard",
-    dataset_text_field="text",
-    packing=False,
-    max_seq_length=None,
 )
 
 
@@ -67,4 +67,4 @@ trainer = Trainer(
     compute_metrics=compute_metrics,
 )
 
-# trainer.evaluate()
+trainer.evaluate()
