@@ -22,7 +22,7 @@ quant_config = BitsAndBytesConfig(
     bnb_4bit_use_double_quant=False,
 )
 
-ds = load_dataset("processed_foam.json")
+ds = load_dataset("finalform/processed_foam")
 model="codellama/CodeLlama-7b-hf"
 new_model = "llama-7b-foam"
 
