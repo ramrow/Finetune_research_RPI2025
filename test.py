@@ -14,6 +14,6 @@ d['text'] = data['train']['text']
 json_object = json.dumps(d, indent=4)
 
 # Writing to sample.json
-with open("data/processed_foam.json", "w") as outfile:
+with open("processed_foam.json", "w") as outfile:
     outfile.write(json_object)
 
