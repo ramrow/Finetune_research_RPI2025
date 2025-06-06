@@ -23,7 +23,7 @@ quant_config = BitsAndBytesConfig(
 )
 
 ds = load_dataset("finalform/processed_foam", split="train")
-model="codellama/CodeLlama-7b-Instruct-hf"
+model="codellama/CodeLlama-34b-Instruct-hf"
 new_model = "llama-7b-foam"
 
 md = AutoModelForCausalLM.from_pretrained(
@@ -48,7 +48,7 @@ peft_params = LoraConfig(
 )
 
 training_args = SFTConfig(
-    output_dir="./results",
+    output_dir="./llama_results",
     num_train_epochs=1,
     per_device_train_batch_size=1,
     gradient_accumulation_steps=1,
