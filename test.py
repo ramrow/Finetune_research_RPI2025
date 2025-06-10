@@ -2,9 +2,9 @@ from datasets import load_dataset
 import json
 
 def format_data(example):
-    prompt = f"Question: {example['description']}"
+    prompt = f"<s>[INST] {example['description']}"
     response = f"foamfiles:\n{example['foamfiles']}\n\nallrun:\n{example['allrun']}"
-    example["text"] = f"{prompt}\n\nResponse:\n{response}"
+    example["text"] = f"{prompt}\n\n[/INST] \n{response}"
     return example
 
 ds = load_dataset("YYgroup/NL2FOAM")
