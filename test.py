@@ -3,8 +3,8 @@ import json
 
 def format_data(example):
     prompt = f"<s>[INST] {example['description']}"
-    response = f"foamfiles:\n{example['foamfiles']}\n\nallrun:\n{example['allrun']}"
-    example["text"] = f"{prompt}\n\n[/INST] \n{response}"
+    response = f"{example['foamfiles']}\n\n{example['allrun']}"
+    example["text"] = f"{prompt}\n\n[/INST] {response}"
     return example
 
 ds = load_dataset("YYgroup/NL2FOAM")

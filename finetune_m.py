@@ -50,8 +50,8 @@ peft_params = LoraConfig(
 training_args = SFTConfig(
     output_dir="./llama_results",
     num_train_epochs=1,
-    per_device_train_batch_size=1,
-    gradient_accumulation_steps=1,
+    per_device_train_batch_size=4,
+    gradient_accumulation_steps=4,
     optim="paged_adamw_32bit",
     save_steps=25,
     logging_steps=25,
@@ -67,7 +67,7 @@ training_args = SFTConfig(
     report_to="tensorboard",
     dataset_text_field="text",
     packing=False,
-    max_seq_length=None,
+    max_seq_length=4096,
 )
 
 trainer = SFTTrainer(
