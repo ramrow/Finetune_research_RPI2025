@@ -23,7 +23,7 @@ quant_config = BitsAndBytesConfig(
 )
 
 ds = load_dataset("finalform/processed_foam", split="train")
-model="codellama/CodeLlama-34b-Instruct-hf"
+model="codellama/CodeLlama-13b-Instruct-hf"
 new_model = "llama-7b-foam"
 
 md = AutoModelForCausalLM.from_pretrained(
