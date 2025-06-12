@@ -10,7 +10,7 @@ def format_data(example):
 ds = load_dataset("YYgroup/NL2FOAM")
 data = ds.map(format_data)
 d = dict()
-d['text'] = data['train']['text'][0:int(28484/5)]
+d['text'] = data['train']['text'][0:int(28484/6)]
 print(len(d['text']))
 json_object = json.dumps(d, indent=4)
 
