@@ -8,4 +8,4 @@ print(pipe("Question: Conduct a RAS simulation for the turbulent flow over " \
 " 10 m/s and the outlet pressure to 0. The walls should be no-slip, and the front "
 "and back should be empty. Use the k-epsilon turbulence model for this simulation. " \
 "The fluid is Newtonian with a kinematic viscosity of 1e-5 m²/s. The control settings " \
-"are: endTime = 0.40 and writeInterval = 0.005."))
+"are: endTime = 0.40 and writeInterval = 0.005.")[0]["generated_text"])
