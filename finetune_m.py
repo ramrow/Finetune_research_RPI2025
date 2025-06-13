@@ -29,7 +29,7 @@ def format_data(example):
     return {"text": full_text}
 
 ds = (load_dataset("finalform/processed_foam", split="train")).map(format_data)
-model="codellama/CodeLlama-13b-Instruct-hf"
+model="NousResearch/Llama-2-13b-hf"
 new_model = "llama-foam"
 
 md = AutoModelForCausalLM.from_pretrained(
