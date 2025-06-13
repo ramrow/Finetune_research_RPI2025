@@ -24,7 +24,7 @@ quant_config = BitsAndBytesConfig(
 
 def format_data(example):
     prompt = example["text"]
-    response = example['allrun']
+    response = example['0/nuTilda']
     full_text = f'{prompt} [/INST] {response}'
     return {"text": full_text}
 
