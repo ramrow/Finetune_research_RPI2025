@@ -54,7 +54,7 @@ peft_params = LoraConfig(
 )
 
 training_args = SFTConfig(
-    output_dir="./llama_results",
+    output_dir="./llama_results_tildaONLY",
     num_train_epochs=1,
     per_device_train_batch_size=1,
     gradient_accumulation_steps=1,
