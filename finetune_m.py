@@ -13,7 +13,7 @@ from transformers import (
 )
 from peft import LoraConfig
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
-import types
+import json
 
 quant_config = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -24,7 +24,7 @@ quant_config = BitsAndBytesConfig(
 
 def format_data(example):
     prompt = example["text"]
-    response = example['0/nuTilda']
+    response = example['allrun']
     full_text = f'{prompt} [/INST] {response}'
     return {"text": full_text}
 
@@ -57,7 +57,7 @@ training_args = SFTConfig(
     output_dir="./llama_results_tildaONLY",
     num_train_epochs=1,
     per_device_train_batch_size=1,
-    gradient_accumulation_steps=1,
+    gradient_accumulation_steps=8,
     optim="paged_adamw_32bit",
     save_steps=25,
     logging_steps=25,
