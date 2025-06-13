@@ -1,6 +1,6 @@
 from transformers import pipeline
 
-model_name_or_path = "llama-7b-foam" #path/to/your/model/or/name/on/hub
+model_name_or_path = "llama-foam" #path/to/your/model/or/name/on/hub
 pipe = pipeline("text-generation", model=model_name_or_path,)
 
 print(pipe("Question: Conduct a RAS simulation for the turbulent flow over " \
