@@ -22,7 +22,13 @@ quant_config = BitsAndBytesConfig(
     bnb_4bit_use_double_quant=False,
 )
 
-ds = load_dataset("finalform/processed_foam", split="train")
+def format_data(example):
+    prompt = example["text"]
+    response = example['allrun'] + " \n" + example['0/nuTilda']
+    full_text = f'{prompt} [/INST] {response}'
+    return {"text": full_text}
+
+ds = (load_dataset("finalform/processed_foam", split="train")).map(format_data)
 model="codellama/CodeLlama-13b-Instruct-hf"
 new_model = "llama-7b-foam"
 
