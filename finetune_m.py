@@ -30,7 +30,7 @@ def format_data(example):
 
 ds = (load_dataset("finalform/processed_foam", split="train")).map(format_data)
 model="codellama/CodeLlama-13b-Instruct-hf"
-new_model = "llama-7b-foam"
+new_model = "llama-foam"
 
 md = AutoModelForCausalLM.from_pretrained(
     model,
