@@ -11,7 +11,7 @@ from transformers import (
     pipeline,
     logging,
 )
-from peft import LoraConfig
+from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 import json
 
@@ -64,6 +64,8 @@ peft_params = LoraConfig(
     task_type="CAUSAL_LM",
 )
 
+peft_md = get_peft_model(md, peft_params)
+
 training_args = TrainingArguments(
     output_dir="./llama_results_tildaONLY",
     num_train_epochs=1,
@@ -82,15 +84,11 @@ training_args = TrainingArguments(
     group_by_length=True,
     lr_scheduler_type="constant",
     report_to="tensorboard",
-    # dataset_text_field="text",
-    # packing=False,
-    # max_seq_length=4096,
 )
 
 trainer = Trainer(
-    model=md,
+    model=peft_md,
     train_dataset=ds,
-    peft_config=peft_params,
     args=training_args,
 )
 
