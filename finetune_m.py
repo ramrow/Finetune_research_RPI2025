@@ -53,7 +53,7 @@ tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
 tokenized_ds = ds.map(tokenize_data)
-toeknized_ds = tokenized_ds.remove_columns(['text'])
+tokenized_ds = tokenized_ds.remove_columns(['text'])
 
 
 peft_params = LoraConfig(
