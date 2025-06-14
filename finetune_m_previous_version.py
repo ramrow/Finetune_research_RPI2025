@@ -24,16 +24,9 @@ quant_config = BitsAndBytesConfig(
 
 def format_data(example):
     prompt = example["text"]
-    response = f'[/INST] {example['0/nuTilda']}'
-    return {"text": prompt, "labels": response, "input_ids": ""}
-
-def tokenize_data(example):
-    prompt = example["text"]
-    output = example['labels']
-    example['input_ids'] = tokenizer(prompt, truncation=True)
-    example['labels'] =  tokenizer(output, truncation=True).input_ids
-
-    return example    
+    response = example['0/nuTilda']
+    full_text = f'{prompt} [/INST] {response}'
+    return {"text": full_text}
 
 ds = (load_dataset("finalform/processed_foam", split="train")).map(format_data)
 model="NousResearch/Llama-2-13b-hf"
@@ -52,10 +45,6 @@ tokenizer.return_tensors = "pt"
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
-tokenized_ds = ds.map(tokenize_data, batch=True)
-toeknized_ds = tokenized_ds.remove_columns(['text'])
-
-
 peft_params = LoraConfig(
     lora_alpha=16,
     lora_dropout=0.1,
@@ -68,7 +57,7 @@ training_args = SFTConfig(
     output_dir="./llama_results_tildaONLY",
     num_train_epochs=1,
     per_device_train_batch_size=1,
-    gradient_accumulation_steps=2,
+    gradient_accumulation_steps=8,
     optim="paged_adamw_32bit",
     save_steps=25,
     logging_steps=25,
@@ -92,6 +81,7 @@ trainer = SFTTrainer(
     train_dataset=ds,
     peft_config=peft_params,
     args=training_args,
+    processing_class=tokenizer
 )
 
 trainer.train()
