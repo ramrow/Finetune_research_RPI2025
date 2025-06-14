@@ -52,7 +52,7 @@ tokenizer.return_tensors = "pt"
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
-tokenized_ds = ds.map(tokenize_data, batch=True)
+tokenized_ds = ds.map(tokenize_data)
 toeknized_ds = tokenized_ds.remove_columns(['text'])
 
 
