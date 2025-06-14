@@ -13,7 +13,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
 
 pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
 
-output = pipe("<s>[INST] Conduct a RAS simulation for the turbulent flow over a backward-facing step using the pimpleFoam solver. Set the inlet velocity to 10 m/s and the outlet pressure to 0. The walls should be no-slip, and the front and back should be empty. Use the k-epsilon turbulence model for this simulation. The fluid is Newtonian with a kinematic viscosity of 1e-5 m²/s. The control settings are: endTime = 0.40 and writeInterval = 0.005.", do_sample=True)
+output = pipe("<s>[INST] Conduct a laminar flow simulation around a cylinder using icoFoam. Apply an inlet velocity boundary condition, maintain a fixed zero pressure at the outlet, enforce a no-slip condition on the cylinder surface, and set zero-gradient conditions on the sides. Utilize a Newtonian fluid model with a kinematic viscosity of nu = 0.01 m^2/s. Initially, the velocity field inside the domain is (0.01, 0, 0) m/s, while the inlet velocity is (1, 0, 0) m/s. Control settings specify an endTime of 500 and a writeInterval of 40.", do_sample=True)
 
 print(output[0]['generated_text'])
 
