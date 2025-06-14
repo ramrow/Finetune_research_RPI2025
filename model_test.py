@@ -1,4 +1,6 @@
 from transformers import pipeline
+import torch
+torch.cuda.empty_cache()
 
 model_name_or_path = "finalform/foam-nuTilda-llama-13B" #path/to/your/model/or/name/on/hub
 pipe = pipeline("text-generation", model=model_name_or_path, batch_size=1)
