@@ -88,7 +88,7 @@ training_args = TrainingArguments(
 
 trainer = Trainer(
     model=peft_md,
-    train_dataset=ds,
+    train_dataset=tokenized_ds,
     args=training_args,
 )
 
