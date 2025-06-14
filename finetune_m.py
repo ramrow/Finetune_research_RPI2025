@@ -83,7 +83,7 @@ training_args = TrainingArguments(
     lr_scheduler_type="constant",
     report_to="tensorboard",
     # dataset_text_field="text",
-    packing=False,
+    # packing=False,
     # max_seq_length=4096,
 )
 
