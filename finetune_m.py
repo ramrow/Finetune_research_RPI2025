@@ -30,8 +30,8 @@ def format_data(example):
 def tokenize_data(example):
     prompt = example["text"]
     output = example['labels']
-    example['input_ids'] = tokenizer(prompt, truncation=True)
-    example['labels'] =  tokenizer(output, truncation=True).input_ids
+    example['input_ids'] = tokenizer(prompt)
+    example['labels'] =  tokenizer(output).input_ids
 
     return example    
 
@@ -64,7 +64,7 @@ peft_params = LoraConfig(
     task_type="CAUSAL_LM",
 )
 
-training_args = SFTConfig(
+training_args = TrainingArguments(
     output_dir="./llama_results_tildaONLY",
     num_train_epochs=1,
     per_device_train_batch_size=1,
@@ -82,12 +82,12 @@ training_args = SFTConfig(
     group_by_length=True,
     lr_scheduler_type="constant",
     report_to="tensorboard",
-    dataset_text_field="text",
+    # dataset_text_field="text",
     packing=False,
-    max_seq_length=4096,
+    # max_seq_length=4096,
 )
 
-trainer = SFTTrainer(
+trainer = Trainer(
     model=md,
     train_dataset=ds,
     peft_config=peft_params,
