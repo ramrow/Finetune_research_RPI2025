@@ -47,7 +47,7 @@ md = AutoModelForCausalLM.from_pretrained(
 )
 md.config.use_cache = False
 md.config.pretraining_tp = 1
-model.to('cuda:0')
+md.to('cuda:0')
 
 tokenizer = AutoTokenizer.from_pretrained(model, trust_remote_code=True)
 tokenizer.return_tensors = "pt"
