@@ -46,6 +46,7 @@ md = AutoModelForCausalLM.from_pretrained(
 )
 md.config.use_cache = False
 md.config.pretraining_tp = 1
+md.to('cuda')
 
 tokenizer = AutoTokenizer.from_pretrained(model, trust_remote_code=True)
 tokenizer.return_tensors = "pt"
@@ -87,7 +88,7 @@ training_args = SFTConfig(
 )
 
 peft_md = get_peft_model(md, peft_params)
-peft_md = dispatch_model(peft_md, device_map="auto")
+# peft_md = dispatch_model(peft_md, device_map="auto")
 
 trainer = SFTTrainer(
     model=peft_md,
