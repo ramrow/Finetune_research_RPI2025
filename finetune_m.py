@@ -6,6 +6,7 @@ from transformers import (
     AutoTokenizer,
     BitsAndBytesConfig,
 )
+from accelerate import dispatch_model
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 
@@ -85,10 +86,13 @@ training_args = SFTConfig(
     packing=False,
 )
 
+peft_md = get_peft_model(md, peft_params)
+peft_md = dispatch_model(peft_md, device_map='auto')
+
 trainer = SFTTrainer(
-    model=md,
+    model=peft_md,
     train_dataset=tokenized_ds,
-    peft_config=peft_params,
+    # peft_config=peft_params,
     args=training_args,
     processing_class=tokenizer,
 )
