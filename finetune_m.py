@@ -6,11 +6,9 @@ from transformers import (
     AutoTokenizer,
     BitsAndBytesConfig,
 )
-from accelerate import dispatch_model
+from accelerate import PartialState
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
-
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 
 quant_config = BitsAndBytesConfig(
@@ -32,7 +30,6 @@ def apply_chat_template(example):
 
 def tokenize_data(example):
     tokens = tokenizer(example['text'], padding="max_length", max_length=1024)
-    # Set padding token labels to -100 to ignore them in loss calculation
     tokens['labels'] = [
         -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
     ]
@@ -45,7 +42,9 @@ new_model = "llama-foam"
 md = AutoModelForCausalLM.from_pretrained(
     model,
     quantization_config=quant_config,
-    device_map="auto"
+    device_map={"": 0}
+
+    # device_map="auto"
 )
 md.config.use_cache = False
 md.config.pretraining_tp = 1
@@ -71,7 +70,7 @@ peft_params = LoraConfig(
 training_args = SFTConfig(
     output_dir="./llama_results_tildaONLY",
     num_train_epochs=1,
-    per_device_train_batch_size=2,
+    per_device_train_batch_size=1,
     gradient_accumulation_steps=2,
     optim="paged_adamw_32bit",
     save_steps=25,
