@@ -2,7 +2,7 @@ import os
 import torch
 from datasets import load_dataset
 from transformers import (
-    AutoModelForCausalLM,
+    AutoModelForSeq2SeqLM,
     AutoTokenizer,
     BitsAndBytesConfig,
     TrainingArguments,
@@ -39,7 +39,7 @@ ds = (load_dataset("finalform/processed_foam", split="train")).map(format_data)
 model="NousResearch/Llama-2-13b-hf"
 new_model = "llama-foam"
 
-md = AutoModelForCausalLM.from_pretrained(
+md = AutoModelForSeq2SeqLM.from_pretrained(
     model,
     quantization_config=quant_config,
     device_map={"": 0}
