@@ -11,9 +11,15 @@ model = AutoModelForCausalLM.from_pretrained(
 
 tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
 
-pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
+input_ids = tokenizer("<s>[INST] Conduct a laminar flow simulation around a cylinder using icoFoam. Apply an inlet velocity boundary condition, maintain a fixed zero pressure at the outlet, enforce a no-slip condition on the cylinder surface, and set zero-gradient conditions on the sides. Utilize a Newtonian fluid model with a kinematic viscosity of nu = 0.01 m^2/s. Initially, the velocity field inside the domain is (0.01, 0, 0) m/s, while the inlet velocity is (1, 0, 0) m/s. Control settings specify an endTime of 500 and a writeInterval of 40.", return_tensors="pt").to("cuda")
 
-output = pipe("<s>[INST] Conduct a laminar flow simulation around a cylinder using icoFoam. Apply an inlet velocity boundary condition, maintain a fixed zero pressure at the outlet, enforce a no-slip condition on the cylinder surface, and set zero-gradient conditions on the sides. Utilize a Newtonian fluid model with a kinematic viscosity of nu = 0.01 m^2/s. Initially, the velocity field inside the domain is (0.01, 0, 0) m/s, while the inlet velocity is (1, 0, 0) m/s. Control settings specify an endTime of 500 and a writeInterval of 40.",)
+output = model.generate(**input_ids, cache_implementation="static")
+print(tokenizer.decode(output[0], skip_special_tokens=True))
 
-print(output[0])
+
+# pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
+
+# output = pipe("<s>[INST] Conduct a laminar flow simulation around a cylinder using icoFoam. Apply an inlet velocity boundary condition, maintain a fixed zero pressure at the outlet, enforce a no-slip condition on the cylinder surface, and set zero-gradient conditions on the sides. Utilize a Newtonian fluid model with a kinematic viscosity of nu = 0.01 m^2/s. Initially, the velocity field inside the domain is (0.01, 0, 0) m/s, while the inlet velocity is (1, 0, 0) m/s. Control settings specify an endTime of 500 and a writeInterval of 40.",)
+
+# print(output[0])
 
