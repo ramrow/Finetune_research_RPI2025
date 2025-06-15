@@ -22,27 +22,47 @@ quant_config = BitsAndBytesConfig(
     bnb_4bit_use_double_quant=False,
 )
 
-def format_data(example):
-    prompt = example["text"]
-    response = f'[/INST] {example['0/nuTilda']}'
-    return {"text": prompt, "labels": response, "input_ids": ""}
+def apply_format(example):
+    messages = [
+        {"role": "user", "content": example['text']},
+        {"role": "assistant", "content": example['0/nuTilda']}
+    ]
+    prompt = tokenizer.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
+    return {"prompt": prompt}
 
 def tokenize_data(example):
-    prompt = example["text"]
-    output = example['labels']
-    example['input_ids'] = tokenizer(prompt, padding="max_length", max_length=512).input_ids
-    example['labels'] =  tokenizer(output, padding="max_length", max_length=512).input_ids
+    tokens = tokenizer(example['prompt'], padding="max_length", max_length=512)
+    # Set padding token labels to -100 to ignore them in loss calculation
+    print(tokens)
+    tokens['labels'] = [
+        -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
+    ]
+    return tokens
 
-    return example    
+# def format_data(example):
+#     prompt = example["text"]
+#     response = f'[/INST] {example['0/nuTilda']}'
+#     return {"text": prompt, "labels": response, "input_ids": ""}
 
-ds = (load_dataset("finalform/processed_foam", split="train")).map(format_data)
+# def tokenize_data(example):
+#     prompt = example["text"]
+#     output = example['labels']
+#     example['input_ids'] = tokenizer(prompt, padding="max_length", max_length=512).input_ids
+#     example['labels'] =  tokenizer(output, padding="max_length", max_length=512).input_ids
+
+#     return example    
+
+# ds = (load_dataset("finalform/processed_foam", split="train")).map(format_data)
+ds = load_dataset("finalform/processed_foam", split="train")
 model="NousResearch/Llama-2-13b-hf"
 new_model = "llama-foam"
 
 md = AutoModelForCausalLM.from_pretrained(
     model,
     quantization_config=quant_config,
-    device_map={"": 0}
+    device_map="auto"
 )
 md.config.use_cache = False
 md.config.pretraining_tp = 1
@@ -52,8 +72,9 @@ tokenizer.return_tensors = "pt"
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
-tokenized_ds = ds.map(tokenize_data)
-tokenized_ds = tokenized_ds.remove_columns(['text', 'allrun', '0/U', 'constant/transportProperties', 'constant/turbulenceProperties', '0/s', '0/sigma', 'constant/fvOptions', '0/omega', 'constant/MRFProperties', '0/k', 'system/fvSchemes', '0/nut', '0/p', '0/epsilon', 'system/controlDict', 'system/fvSolution', 'constant/dynamicMeshDict', '0/nuTilda', 'system/topoSetDict'])
+organized_ds = ds.map(apply_format)
+tokenized_ds = organized_ds.map(tokenize_data)
+tokenized_ds = tokenized_ds.remove_columns(['prompt','text', 'allrun', '0/U', 'constant/transportProperties', 'constant/turbulenceProperties', '0/s', '0/sigma', 'constant/fvOptions', '0/omega', 'constant/MRFProperties', '0/k', 'system/fvSchemes', '0/nut', '0/p', '0/epsilon', 'system/controlDict', 'system/fvSolution', 'constant/dynamicMeshDict', '0/nuTilda', 'system/topoSetDict'])
 
 
 peft_params = LoraConfig(
@@ -69,7 +90,7 @@ peft_params = LoraConfig(
 training_args = SFTConfig(
     output_dir="./llama_results_tildaONLY",
     num_train_epochs=1,
-    per_device_train_batch_size=1,
+    per_device_train_batch_size=2,
     gradient_accumulation_steps=2,
     optim="paged_adamw_32bit",
     save_steps=25,
