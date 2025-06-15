@@ -56,7 +56,7 @@ def tokenize_data(example):
 
 # ds = (load_dataset("finalform/processed_foam", split="train")).map(format_data)
 ds = load_dataset("finalform/processed_foam", split="train")
-model="NousResearch/Llama-2-13b-chat-hf"
+model="codellama/CodeLlama-13b-Instruct-hf"
 new_model = "llama-foam"
 
 md = AutoModelForCausalLM.from_pretrained(
