@@ -1,7 +1,7 @@
 from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
 import torch
 
-model_name_or_path = "finalform/foam-nuTilda-llama-2-13B-test"
+model_name_or_path = "finalform/foam-nuTilda-sft-llama2-13B"
 
 model = AutoModelForCausalLM.from_pretrained(
     model_name_or_path,
