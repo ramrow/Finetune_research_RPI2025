@@ -5,15 +5,9 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     BitsAndBytesConfig,
-    TrainingArguments,
-    DataCollatorForLanguageModeling,
-    Trainer,
-    pipeline,
-    logging,
 )
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
-import json
 
 quant_config = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -35,26 +29,11 @@ def apply_chat_template(example):
 def tokenize_data(example):
     tokens = tokenizer(example['text'], padding="max_length", max_length=1024)
     # Set padding token labels to -100 to ignore them in loss calculation
-    print(tokens)
     tokens['labels'] = [
         -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
     ]
     return tokens
 
-# def format_data(example):
-#     prompt = example["text"]
-#     response = f'[/INST] {example['0/nuTilda']}'
-#     return {"text": prompt, "labels": response, "input_ids": ""}
-
-# def tokenize_data(example):
-#     prompt = example["text"]
-#     output = example['labels']
-#     example['input_ids'] = tokenizer(prompt, padding="max_length", max_length=512).input_ids
-#     example['labels'] =  tokenizer(output, padding="max_length", max_length=512).input_ids
-
-#     return example    
-
-# ds = (load_dataset("finalform/processed_foam", split="train")).map(format_data)
 ds = load_dataset("finalform/processed_foam", split="train")
 model="codellama/CodeLlama-13b-Instruct-hf"
 new_model = "llama-foam"
@@ -84,8 +63,6 @@ peft_params = LoraConfig(
     bias="none",
     task_type="CAUSAL_LM",
 )
-
-# peft_md = get_peft_model(md, peft_params)
 
 training_args = SFTConfig(
     output_dir="./llama_results_tildaONLY",
