@@ -30,7 +30,7 @@ def apply_chat_template(example):
     prompt = tokenizer.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True
     )
-    return {"prompt": prompt}
+    return {"text": prompt}
 
 def tokenize_data(example):
     tokens = tokenizer(example['prompt'], padding="max_length", max_length=512)
@@ -56,7 +56,7 @@ def tokenize_data(example):
 
 # ds = (load_dataset("finalform/processed_foam", split="train")).map(format_data)
 ds = load_dataset("finalform/processed_foam", split="train")
-model="NousResearch/Llama-2-13b-hf"
+model="NousResearch/Llama-2-13b-chat-hf"
 new_model = "llama-foam"
 
 md = AutoModelForCausalLM.from_pretrained(
@@ -74,7 +74,7 @@ tokenizer.padding_side = "right"
 
 organized_ds = ds.map(apply_chat_template)
 tokenized_ds = organized_ds.map(tokenize_data)
-tokenized_ds = tokenized_ds.remove_columns(['prompt','text', 'allrun', '0/U', 'constant/transportProperties', 'constant/turbulenceProperties', '0/s', '0/sigma', 'constant/fvOptions', '0/omega', 'constant/MRFProperties', '0/k', 'system/fvSchemes', '0/nut', '0/p', '0/epsilon', 'system/controlDict', 'system/fvSolution', 'constant/dynamicMeshDict', '0/nuTilda', 'system/topoSetDict'])
+tokenized_ds = tokenized_ds.remove_columns(['text', 'allrun', '0/U', 'constant/transportProperties', 'constant/turbulenceProperties', '0/s', '0/sigma', 'constant/fvOptions', '0/omega', 'constant/MRFProperties', '0/k', 'system/fvSchemes', '0/nut', '0/p', '0/epsilon', 'system/controlDict', 'system/fvSolution', 'constant/dynamicMeshDict', '0/nuTilda', 'system/topoSetDict'])
 
 
 peft_params = LoraConfig(
