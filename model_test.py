@@ -1,9 +1,9 @@
-from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
+from transformers import pipeline, AutoModelForSeq2SeqLM, AutoTokenizer
 import torch
 
 model_name_or_path = "finalform/foam-nuTilda-sft-llama2-13B"
 
-model = AutoModelForCausalLM.from_pretrained(
+model = AutoModelForSeq2SeqLM.from_pretrained(
     model_name_or_path,
     torch_dtype=torch.float16,
     device_map="auto"  # Automatically place model on available GPUs
