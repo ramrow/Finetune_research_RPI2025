@@ -33,7 +33,7 @@ def apply_chat_template(example):
     return {"text": prompt}
 
 def tokenize_data(example):
-    tokens = tokenizer(example['prompt'], padding="max_length", max_length=512)
+    tokens = tokenizer(example['text'], padding="max_length", max_length=1024)
     # Set padding token labels to -100 to ignore them in loss calculation
     print(tokens)
     tokens['labels'] = [
