@@ -64,9 +64,9 @@ peft_params = LoraConfig(
     task_type="CAUSAL_LM",
 )
 
-peft_md = get_peft_model(md, peft_params)
+# peft_md = get_peft_model(md, peft_params)
 
-training_args = TrainingArguments(
+training_args = SFTConfig(
     output_dir="./llama_results_tildaONLY",
     num_train_epochs=1,
     per_device_train_batch_size=1,
@@ -84,13 +84,15 @@ training_args = TrainingArguments(
     group_by_length=True,
     lr_scheduler_type="constant",
     report_to="tensorboard",
+    packing=False,
 )
 
-trainer = Trainer(
-    model=peft_md,
+trainer = SFTTrainer(
+    model=md,
     train_dataset=tokenized_ds,
+    peft_config=peft_params,
     args=training_args,
-    processing_class=tokenizer
+    processing_class=tokenizer,
 )
 
 trainer.train()
