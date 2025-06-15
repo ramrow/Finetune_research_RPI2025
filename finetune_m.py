@@ -10,6 +10,8 @@ from accelerate import dispatch_model
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
+
 
 quant_config = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -88,7 +90,7 @@ training_args = SFTConfig(
 )
 
 peft_md = get_peft_model(md, peft_params)
-peft_md = dispatch_model(peft_md)
+# peft_md = dispatch_model(peft_md, device_map={})
 
 trainer = SFTTrainer(
     model=peft_md,
