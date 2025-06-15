@@ -90,6 +90,7 @@ trainer = Trainer(
     model=peft_md,
     train_dataset=tokenized_ds,
     args=training_args,
+    processing_class=tokenizer
 )
 
 trainer.train()
