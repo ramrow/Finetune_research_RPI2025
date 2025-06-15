@@ -22,7 +22,7 @@ quant_config = BitsAndBytesConfig(
     bnb_4bit_use_double_quant=False,
 )
 
-def apply_format(example):
+def apply_chat_template(example):
     messages = [
         {"role": "user", "content": example['text']},
         {"role": "assistant", "content": example['0/nuTilda']}
@@ -72,7 +72,7 @@ tokenizer.return_tensors = "pt"
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
-organized_ds = ds.map(apply_format)
+organized_ds = ds.map(apply_chat_template)
 tokenized_ds = organized_ds.map(tokenize_data)
 tokenized_ds = tokenized_ds.remove_columns(['prompt','text', 'allrun', '0/U', 'constant/transportProperties', 'constant/turbulenceProperties', '0/s', '0/sigma', 'constant/fvOptions', '0/omega', 'constant/MRFProperties', '0/k', 'system/fvSchemes', '0/nut', '0/p', '0/epsilon', 'system/controlDict', 'system/fvSolution', 'constant/dynamicMeshDict', '0/nuTilda', 'system/topoSetDict'])
 
