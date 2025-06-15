@@ -10,7 +10,6 @@ from accelerate import dispatch_model
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 
-device = "cuda:0"
 
 quant_config = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -48,7 +47,7 @@ md = AutoModelForCausalLM.from_pretrained(
 )
 md.config.use_cache = False
 md.config.pretraining_tp = 1
-md.to('cuda')
+model.to('cuda:0')
 
 tokenizer = AutoTokenizer.from_pretrained(model, trust_remote_code=True)
 tokenizer.return_tensors = "pt"
