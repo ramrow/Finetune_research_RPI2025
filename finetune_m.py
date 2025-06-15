@@ -30,8 +30,8 @@ def format_data(example):
 def tokenize_data(example):
     prompt = example["text"]
     output = example['labels']
-    example['input_ids'] = tokenizer(prompt).input_ids
-    example['labels'] =  tokenizer(output).input_ids
+    example['input_ids'] = tokenizer(prompt, padding="max_length", max_length=512).input_ids
+    example['labels'] =  tokenizer(output, padding="max_length", max_length=512).input_ids
 
     return example    
 
