@@ -87,7 +87,7 @@ training_args = SFTConfig(
 )
 
 peft_md = get_peft_model(md, peft_params)
-# peft_md = dispatch_model(peft_md, device_map='auto')
+peft_md = dispatch_model(peft_md, device_map="auto")
 
 trainer = SFTTrainer(
     model=peft_md,
