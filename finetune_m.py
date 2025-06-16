@@ -10,7 +10,7 @@ from accelerate import PartialState
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+# os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 quant_config = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -22,7 +22,25 @@ quant_config = BitsAndBytesConfig(
 def apply_chat_template(example):
     messages = [
         {"role": "user", "content": example['text']},
-        {"role": "assistant", "content": example['0/nuTilda']}
+        {"role": "0/nuTilda", "content": example['0/nuTilda']},
+        {"role": "system/controlDict", "content": example['system/controlDict']},
+        {"role": "system/fvSchemes", "content": example['system/fvSchemes']},
+        {"role": "0/p", "content": example['0/p']},
+        {"role": "constant/turbulenceProperties", "content": example['constant/turbulenceProperties']},
+        {"role": "system/fvSolution", "content": example['system/fvSolution']},
+        {"role": "0/nut", "content": example['0/nut']},
+        {"role": "0/k", "content": example['0/k']},
+        {"role": "0/U", "content": example['0/U']},
+        {"role": "constant/transportProperties", "content": example['constant/transportProperties']},
+        {"role": "0/epsilon", "content": example['0/epsilon']},
+        {"role": "0/sigma", "content": example['0/sigma']},
+        {"role": "constant/fvOptions", "content": example['constant/fvOptions']},
+        {"role": "0/omega", "content": example['0/omega']},
+        {"role": "0/s", "content": example['0/s']},
+        {"role": "constant/MRFProperties", "content": example['constant/MRFProperties']},
+        {"role": "constant/dynamicMeshDict", "content": example['constant/dynamicMeshDict']},
+        {"role": "system/topoSetDict", "content": example['system/topoSetDict']},
+        {"role": "allrun", "content": example['allrun']}
     ]
     prompt = tokenizer.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True
@@ -30,7 +48,7 @@ def apply_chat_template(example):
     return {"text": prompt}
 
 def tokenize_data(example):
-    tokens = tokenizer(example['text'], padding="max_length", max_length=1024)
+    tokens = tokenizer(example['text'], padding="max_length", max_length=2300)
     tokens['labels'] = [
         -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
     ]
@@ -43,8 +61,8 @@ new_model = "llama-foam"
 md = AutoModelForCausalLM.from_pretrained(
     model,
     quantization_config=quant_config,
-    # device_map={"": 0}
-    device_map="auto"
+    device_map={"": 0}
+    # device_map="auto"
 )
 md.config.use_cache = False
 md.config.pretraining_tp = 1
@@ -69,9 +87,9 @@ peft_params = LoraConfig(
 )
 
 training_args = SFTConfig(
-    output_dir="./llama_results_tildaONLY",
+    output_dir="./llama_results",
     num_train_epochs=1,
-    per_device_train_batch_size=2,
+    per_device_train_batch_size=1,
     gradient_accumulation_steps=2,
     optim="paged_adamw_32bit",
     save_steps=25,

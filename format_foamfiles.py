@@ -2,7 +2,9 @@ from datasets import load_dataset
 import pandas as pd
 import json
 
-names = {'0/nuTilda', 'system/controlDict', 'system/fvSchemes', '0/p', 'constant/turbulenceProperties', 'system/fvSolution', '0/nut', '0/k', '0/U', 'constant/transportProperties', '0/epsilon', '0/sigma', 'constant/fvOptions', '0/omega', '0/s', 'constant/MRFProperties', 'constant/dynamicMeshDict', 'system/topoSetDict'} 
+names = {'0/nuTilda', 'system/controlDict', 'system/fvSchemes', '0/p', 'constant/turbulenceProperties', 
+        'system/fvSolution', '0/nut', '0/k', '0/U', 'constant/transportProperties', '0/epsilon', 
+        '0/sigma', 'constant/fvOptions', '0/omega', '0/s', 'constant/MRFProperties', 'constant/dynamicMeshDict', 'system/topoSetDict'} 
 
 
 def format_data(example):
