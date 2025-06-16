@@ -12,7 +12,7 @@ md = AutoModelForCausalLM.from_pretrained(
 
 tk = AutoTokenizer.from_pretrained(model_name_or_path)
 
-text = "<s>[INST] Conduct a laminar flow simulation around a cylinder using icoFoam. Apply an inlet velocity boundary condition, maintain a fixed zero pressure at the outlet, enforce a no-slip condition on the cylinder surface, and set zero-gradient conditions on the sides. Utilize a Newtonian fluid model with a kinematic viscosity of nu = 0.01 m^2/s. Initially, the velocity field inside the domain is (0.01, 0, 0) m/s, while the inlet velocity is (1, 0, 0) m/s. Control settings specify an endTime of 500 and a writeInterval of 40."
+text = "<s>[INST] Conduct a RAS simulation of turbulent flow over a backward-facing step using pimpleFoam. Set the inlet velocity to 10 m/s, maintain the outlet pressure at 0, apply no-slip conditions to the walls, and treat the front and back as empty. Use the k-epsilon turbulence model for this simulation. The fluid is a Newtonian fluid with a kinematic viscosity of 1e-5 m^2/s. Control settings are as follows: endTime = 0.30, writeInterval = 0.005."
 
 
 
