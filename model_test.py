@@ -1,7 +1,8 @@
 from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
 import torch
 
-model_name_or_path = "finalform/foam-nuTilda-sft-llama2-13B"
+# model_name_or_path = "finalform/foam-nuTilda-sft-llama2-13B"
+model_name_or_path = "/home/xup2/environment/main_finetune/model_test.py"
 
 md = AutoModelForCausalLM.from_pretrained(
     model_name_or_path,
