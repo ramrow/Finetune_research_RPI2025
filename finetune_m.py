@@ -85,8 +85,8 @@ new_model = "llama-foam"
 md = AutoModelForCausalLM.from_pretrained(
     model,
     quantization_config=quant_config,
-    # device_map={"": 0}
-    device_map="auto"
+    device_map={"": 0}
+    # device_map="auto"
 )
 md.config.use_cache = False
 md.config.pretraining_tp = 1
