@@ -18,29 +18,53 @@ quant_config = BitsAndBytesConfig(
     bnb_4bit_compute_dtype=getattr(torch, "float16"),
     bnb_4bit_use_double_quant=False,
 )
+def format_files(example):
+    return {
+        "0/nuTilda": example["0/nuTilda"],
+        "system/controlDict": example["system/controlDict"],
+        "system/fvSchemes": example["system/fvSchemes"],
+        "0/p": example["0/p"],
+        "constant/turbulenceProperties": example["constant/turbulenceProperties"],
+        "system/fvSolution": example["system/fvSolution"],
+        "0/nut": example["0/nut"],
+        "0/k": example["0/k"],
+        "0/U": example["0/U"],
+        "constant/transportProperties": example["constant/transportProperties"],
+        "0/epsilon": example["0/epsilon"],
+        "0/sigma": example["0/sigma"],
+        "constant/fvOptions": example["constant/fvOptions"],
+        "0/omega": example["0/omega"],
+        "0/s": example["0/s"],
+        "constant/MRFProperties": example["constant/MRFProperties"],
+        "constant/dynamicMeshDict": example["constant/dynamicMeshDict"],
+        "system/topoSetDict": example["system/topoSetDict"],
+        "allrun": example["allrun"]
+    }
+
 
 def apply_chat_template(example):
     messages = [
         {"role": "user", "content": example['text']},
-        {"role": "0/nuTilda", "content": example['0/nuTilda']},
-        {"role": "system/controlDict", "content": example['system/controlDict']},
-        {"role": "system/fvSchemes", "content": example['system/fvSchemes']},
-        {"role": "0/p", "content": example['0/p']},
-        {"role": "constant/turbulenceProperties", "content": example['constant/turbulenceProperties']},
-        {"role": "system/fvSolution", "content": example['system/fvSolution']},
-        {"role": "0/nut", "content": example['0/nut']},
-        {"role": "0/k", "content": example['0/k']},
-        {"role": "0/U", "content": example['0/U']},
-        {"role": "constant/transportProperties", "content": example['constant/transportProperties']},
-        {"role": "0/epsilon", "content": example['0/epsilon']},
-        {"role": "0/sigma", "content": example['0/sigma']},
-        {"role": "constant/fvOptions", "content": example['constant/fvOptions']},
-        {"role": "0/omega", "content": example['0/omega']},
-        {"role": "0/s", "content": example['0/s']},
-        {"role": "constant/MRFProperties", "content": example['constant/MRFProperties']},
-        {"role": "constant/dynamicMeshDict", "content": example['constant/dynamicMeshDict']},
-        {"role": "system/topoSetDict", "content": example['system/topoSetDict']},
-        {"role": "allrun", "content": example['allrun']}
+        {"role": "assistant", "content": format_files(example)}
+        # {"role": "0/nuTilda", "content": example['0/nuTilda']},
+        # {"role": "system/controlDict", "content": example['system/controlDict']},
+        # {"role": "system/fvSchemes", "content": example['system/fvSchemes']},
+        # {"role": "0/p", "content": example['0/p']},
+        # {"role": "constant/turbulenceProperties", "content": example['constant/turbulenceProperties']},
+        # {"role": "system/fvSolution", "content": example['system/fvSolution']},
+        # {"role": "0/nut", "content": example['0/nut']},
+        # {"role": "0/k", "content": example['0/k']},
+        # {"role": "0/U", "content": example['0/U']},
+        # {"role": "constant/transportProperties", "content": example['constant/transportProperties']},
+        # {"role": "0/epsilon", "content": example['0/epsilon']},
+        # {"role": "0/sigma", "content": example['0/sigma']},
+        # {"role": "constant/fvOptions", "content": example['constant/fvOptions']},
+        # {"role": "0/omega", "content": example['0/omega']},
+        # {"role": "0/s", "content": example['0/s']},
+        # {"role": "constant/MRFProperties", "content": example['constant/MRFProperties']},
+        # {"role": "constant/dynamicMeshDict", "content": example['constant/dynamicMeshDict']},
+        # {"role": "system/topoSetDict", "content": example['system/topoSetDict']},
+        # {"role": "allrun", "content": example['allrun']}
     ]
     prompt = tokenizer.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True
