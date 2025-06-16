@@ -10,7 +10,7 @@ from accelerate import PartialState
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+# os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 quant_config = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -111,6 +111,7 @@ peft_params = LoraConfig(
 training_args = SFTConfig(
     output_dir="./llama_results",
     num_train_epochs=1,
+    # per_device_train_batch_size=2,
     per_device_train_batch_size=2,
     gradient_accumulation_steps=2,
     optim="paged_adamw_32bit",
