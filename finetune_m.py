@@ -99,7 +99,6 @@ tokenizer.padding_side = "right"
 organized_ds = ds.map(apply_chat_template)
 tokenized_ds = organized_ds.map(tokenize_data)
 tokenized_ds = tokenized_ds.remove_columns(['text', 'allrun', '0/U', 'constant/transportProperties', 'constant/turbulenceProperties', '0/s', '0/sigma', 'constant/fvOptions', '0/omega', 'constant/MRFProperties', '0/k', 'system/fvSchemes', '0/nut', '0/p', '0/epsilon', 'system/controlDict', 'system/fvSolution', 'constant/dynamicMeshDict', '0/nuTilda', 'system/topoSetDict'])
-tokenized_ds.cuda()
 
 peft_params = LoraConfig(
     lora_alpha=16,
