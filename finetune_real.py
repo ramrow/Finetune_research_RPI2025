@@ -39,7 +39,7 @@ def tokenize_data(example):
 
 
 ds = load_dataset("finalform/formated_foam", split="train")
-model="codellama/CodeLlama-13b-Instruct-hf"
+model="codellama/CodeLlama-7b-Instruct-hf"
 new_model = "llama-foam"
 
 md = AutoModelForCausalLM.from_pretrained(
@@ -78,8 +78,8 @@ training_args = SFTConfig(
     # per_device_eval_batch_size=1,
     gradient_accumulation_steps=2,
     optim="paged_adamw_32bit",
-    save_steps=25,
-    logging_steps=25,
+    save_steps=250,
+    logging_steps=50,
     learning_rate=2e-4,
     weight_decay=0.001,
     fp16=False,
