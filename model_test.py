@@ -28,6 +28,6 @@ messages = [
 
 ]
 
-output = pipe(messages, max_new_tokens=7000)
-print(output[0])
+output = pipe(messages)
+print(output)
 
