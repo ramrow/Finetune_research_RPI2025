@@ -21,7 +21,7 @@ pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map={"":0
 
 messages = [
     {"role": "user", "content": prompt},
-    {"role": "system", "content": text},
+    # {"role": "system", "content": text},
 
 ]
 
