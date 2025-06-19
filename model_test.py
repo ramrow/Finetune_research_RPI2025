@@ -20,8 +20,9 @@ text = "Conduct a RAS simulation for the turbulent flow over a backward-facing s
 pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map={"":0})
 
 messages = [
+    {"role": "user", "content": text},
     {"role": "system", "content": prompt},
-    {"role": "user", "content": text}
+
 ]
 
 output = pipe(messages, max_new_tokens=3000)
