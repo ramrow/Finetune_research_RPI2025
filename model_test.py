@@ -9,7 +9,7 @@ model_name_or_path = "finalform/foamllama-7B"
 
 md = AutoModelForCausalLM.from_pretrained(
     model_name_or_path,
-    torch_dtype=torch.float64,
+    torch_dtype=torch.float32,
     device_map={"": 0}  # Automatically place model on available GPUs
 )
 
