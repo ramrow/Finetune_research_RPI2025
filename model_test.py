@@ -29,6 +29,6 @@ messages = [
     {"role": "user", "content": text}
 ]
 
-output = pipe(messages, max_new_token=3000)
+output = pipe(messages, max_new_tokens=3000)
 print(output)
 
