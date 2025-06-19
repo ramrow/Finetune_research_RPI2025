@@ -9,7 +9,7 @@ model_name_or_path = "finalform/foamllama-7B"
 
 md = AutoModelForCausalLM.from_pretrained(
     model_name_or_path,
-    torch_dtype=torch.float32,
+    torch_dtype=torch.float64,
     device_map={"": 0}  # Automatically place model on available GPUs
 )
 
@@ -29,6 +29,6 @@ messages = [
     {"role": "user", "content": text}
 ]
 
-output = pipe(messages, max_new_tokens=3000)
+output = pipe(messages, max_new_tokens=512)
 print(output[0]['generated_text'][2]['content'])
 
