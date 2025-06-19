@@ -25,6 +25,6 @@ messages = [
 
 ]
 
-output = pipe(messages, max_new_tokens=3000)
+output = pipe(messages, max_new_tokens=4096)
 print(output[0])
 
