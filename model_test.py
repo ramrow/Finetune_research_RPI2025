@@ -30,5 +30,5 @@ messages = [
 ]
 
 output = pipe(messages, max_new_tokens=256)
-print(output[0]['generated_test']['assistant'])
+print(output[0]['generated_text']['assistant'])
 
