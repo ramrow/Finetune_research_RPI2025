@@ -11,8 +11,7 @@ md = AutoModelForCausalLM.from_pretrained(
     model_name_or_path,
     torch_dtype="auto",
     # torch_dtype=torch.float32,
-    # device_map={"": 0}  # Automatically place model on available GPUs
-    device_map="auto"
+    device_map={"": 0}  # Automatically place model on available GPUs
 )
 
 tk = AutoTokenizer.from_pretrained(model_name_or_path)
@@ -24,7 +23,7 @@ prompt = "You are an expert in OpenFOAM simulation and numerical modeling. Your 
 text = "Conduct a RAS simulation for the turbulent flow over a backward-facing step using the pimpleFoam solver. Set the inlet velocity to 10 m/s and the outlet pressure to 0. The walls should be no-slip, and the front and back should be empty. Use the k-epsilon turbulence model for this simulation. The fluid is Newtonian with a kinematic viscosity of 1e-5 m²/s. The control settings are: endTime = 0.40 and writeInterval = 0.005. Please ensure that the generated file is complete, functional, and logically sound. Additionally, apply your domain expertise to verify that all numerical values are consistent with the user's requirements, maintaining accuracy and coherence."
 
 
-pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map="auto")
+pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map={"":0})
 
 messages = [
     {"role": "system", "content": prompt},
