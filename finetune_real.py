@@ -6,7 +6,6 @@ from transformers import (
     AutoTokenizer,
     BitsAndBytesConfig,
 )
-from accelerate import PartialState
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig
 
@@ -15,7 +14,7 @@ os.environ["CUDA_VISIBLE_DEVICES"]="0"
 quant_config = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_quant_type="nf4",
-    bnb_4bit_compute_dtype=getattr(torch, "float16"),
+    bnb_4bit_compute_dtype=torch.bfloat16,
     bnb_4bit_use_double_quant=False,
 )
 
@@ -31,14 +30,14 @@ def apply_chat_template(example):
     return {"text": prompt}
 
 def tokenize_data(example):
-    tokens = tokenizer(example['text'], padding="max_length", max_length=3000)
+    tokens = tokenizer(example['text'], padding="max_length", max_length=2056)
     tokens['labels'] = [
         -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
     ]
     return tokens
 
 
-ds = load_dataset("finalform/formated_foam", split="train")
+ds = (load_dataset("finalform/formated_foam", split="train")).shuffle()
 model="codellama/CodeLlama-7b-Instruct-hf"
 new_model = "llama-foam"
 
@@ -64,14 +63,15 @@ tokenized_ds = tokenized_ds.remove_columns(["text", "system_prompt", "usr_prompt
 peft_params = LoraConfig(
     lora_alpha=16,
     lora_dropout=0.1,
-    r=64,
+    r=32, #change rank
     bias="none",
     task_type="CAUSAL_LM",
 )
 
 training_args = SFTConfig(
     output_dir="./llamaResultsFormatted",
-    num_train_epochs=1,
+    # resume_from_checkpoint="./llamaResultsFormatted/checkpoint-",
+    num_train_epochs=3,
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     # per_device_train_batch_size=1,
@@ -106,5 +106,7 @@ trainer = SFTTrainer(
 )
 
 trainer.train()
+# trainer.train(resume_from_checkpoint=True)
 trainer.model.save_pretrained(new_model)
 trainer.processing_class.save_pretrained(new_model)
+trainer.evaluate()
