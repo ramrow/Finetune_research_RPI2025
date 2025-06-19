@@ -1,7 +1,10 @@
 from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
 import torch
+import os
 
 # model_name_or_path = "finalform/foam-nuTilda-sft-llama2-13B"
+os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
+
 model_name_or_path = "finalform/foamllama-7B"
 
 md = AutoModelForCausalLM.from_pretrained(
