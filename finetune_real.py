@@ -15,7 +15,7 @@ quant_config = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_quant_type="nf4",
     bnb_4bit_compute_dtype=torch.bfloat16,
-    bnb_4bit_use_double_quant=False,
+    bnb_4bit_use_double_quant=True,
 )
 
 def apply_chat_template(example):
@@ -71,7 +71,7 @@ peft_params = LoraConfig(
 training_args = SFTConfig(
     output_dir="./llamaResultsFormatted",
     # resume_from_checkpoint="./llamaResultsFormatted/checkpoint-",
-    num_train_epochs=3,
+    num_train_epochs=2,
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     # per_device_train_batch_size=1,
