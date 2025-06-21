@@ -10,13 +10,13 @@ from accelerate import PartialState
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 
-# os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 quant_config = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_quant_type="nf4",
     bnb_4bit_compute_dtype=getattr(torch, "float16"),
-    bnb_4bit_use_double_quant=False,
+    bnb_4bit_use_double_quant=True,
 )
 def format_files(example):
     return {
@@ -78,15 +78,15 @@ def tokenize_data(example):
     ]
     return tokens
 
-ds = load_dataset("finalform/processed_foam", split="train")
+ds = (load_dataset("finalform/processed_foam", split="train")).shuffle()
 model="codellama/CodeLlama-13b-Instruct-hf"
 new_model = "llama-foam"
 
 md = AutoModelForCausalLM.from_pretrained(
     model,
     quantization_config=quant_config,
-    device_map={"": 0}
-    # device_map="auto"
+    # device_map={"": 0}
+    device_map="auto"
 )
 md.config.use_cache = False
 md.config.pretraining_tp = 1
@@ -99,6 +99,7 @@ tokenizer.padding_side = "right"
 organized_ds = ds.map(apply_chat_template)
 tokenized_ds = organized_ds.map(tokenize_data)
 tokenized_ds = tokenized_ds.remove_columns(['text', 'allrun', '0/U', 'constant/transportProperties', 'constant/turbulenceProperties', '0/s', '0/sigma', 'constant/fvOptions', '0/omega', 'constant/MRFProperties', '0/k', 'system/fvSchemes', '0/nut', '0/p', '0/epsilon', 'system/controlDict', 'system/fvSolution', 'constant/dynamicMeshDict', '0/nuTilda', 'system/topoSetDict'])
+tokenized_ds = tokenized_ds.train_test_split(0.05)
 
 peft_params = LoraConfig(
     lora_alpha=16,
@@ -111,8 +112,8 @@ peft_params = LoraConfig(
 training_args = SFTConfig(
     output_dir="./llama_results",
     num_train_epochs=1,
-    # per_device_train_batch_size=2,
-    per_device_train_batch_size=1,
+    per_device_train_batch_size=2,
+    # per_device_train_batch_size=1,
     gradient_accumulation_steps=2,
     optim="paged_adamw_32bit",
     save_steps=25,
@@ -135,7 +136,8 @@ peft_md = get_peft_model(md, peft_params)
 
 trainer = SFTTrainer(
     model=peft_md,
-    train_dataset=tokenized_ds,
+    train_dataset=tokenized_ds['train'],
+    eval_dataset=tokenized_ds['test'],
     # peft_config=peft_params,
     args=training_args,
     processing_class=tokenizer,
@@ -144,3 +146,4 @@ trainer = SFTTrainer(
 trainer.train()
 trainer.model.save_pretrained(new_model)
 trainer.processing_class.save_pretrained(new_model)
+trainer.evaluate()
