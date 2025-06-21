@@ -22,7 +22,7 @@ messages = [
     {"role": "user", "content": text}
 ]
 
-output = pipe(messages, new_max_tokens=1024)
+output = pipe(messages)
 print(output[0])
 # md = AutoModelForCausalLM.from_pretrained(
 #     model_name_or_path,
