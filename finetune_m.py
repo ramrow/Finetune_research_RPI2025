@@ -79,7 +79,7 @@ def tokenize_data(example):
     return tokens
 
 ds = (load_dataset("finalform/processed_foam", split="train")).shuffle()
-model="codellama/CodeLlama-13b-Instruct-hf"
+model="codellama/CodeLlama-7b-Instruct-hf"
 new_model = "llama-foam"
 
 md = AutoModelForCausalLM.from_pretrained(
