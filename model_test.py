@@ -24,6 +24,7 @@ messages = [
 
 output = pipe(messages,)#max_new_tokens=3000)
 result = output[0]['generated_text'][-1]['content']
+print(result)
 print(len(result))
 
 # md = AutoModelForCausalLM.from_pretrained(
