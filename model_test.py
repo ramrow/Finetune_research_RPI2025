@@ -23,7 +23,7 @@ messages = [
 ]
 
 output = pipe(messages, max_new_tokens=1028)
-print(output)
+print(output[-1])
 # md = AutoModelForCausalLM.from_pretrained(
 #     model_name_or_path,
 #     # torch_dtype="auto",
