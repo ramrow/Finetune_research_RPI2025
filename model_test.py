@@ -24,13 +24,13 @@ messages = [
 
 output = pipe(messages,max_new_tokens=2300)#max_new_tokens=3000)
 result = output[0]['generated_text'][-1]['content']
-print(len(output))
-print(result)
-print(len(result))
-names = ['allrun', '0/U', 'constant/transportProperties', 'constant/turbulenceProperties', '0/s', '0/sigma', 'constant/fvOptions', '0/omega', 'constant/MRFProperties', '0/k', 'system/fvSchemes', '0/nut', '0/p', '0/epsilon', 'system/controlDict', 'system/fvSolution', 'constant/dynamicMeshDict', '0/nuTilda', 'system/topoSetDict']
-for n in names:
-    if not (n in result):
-        print(n)
+# print(len(output))
+# print(result)
+# print(len(result))
+# names = ['allrun', '0/U', 'constant/transportProperties', 'constant/turbulenceProperties', '0/s', '0/sigma', 'constant/fvOptions', '0/omega', 'constant/MRFProperties', '0/k', 'system/fvSchemes', '0/nut', '0/p', '0/epsilon', 'system/controlDict', 'system/fvSolution', 'constant/dynamicMeshDict', '0/nuTilda', 'system/topoSetDict']
+# for n in names:
+#     if not (n in result):
+#         print(n)
 # md = AutoModelForCausalLM.from_pretrained(
 #     model_name_or_path,
 #     # torch_dtype="auto",

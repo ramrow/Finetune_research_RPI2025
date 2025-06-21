@@ -26,6 +26,7 @@ def format_files(example):
         "0/p": example["0/p"],
         "constant/turbulenceProperties": example["constant/turbulenceProperties"],
         "system/fvSolution": example["system/fvSolution"],
+
         "0/nut": example["0/nut"],
         "0/k": example["0/k"],
         "0/U": example["0/U"],
@@ -72,7 +73,7 @@ def apply_chat_template(example):
     return {"text": prompt}
 
 def tokenize_data(example):
-    tokens = tokenizer(example['text'], padding="max_length", max_length=2300)
+    tokens = tokenizer(example['text'], padding="max_length", max_length=5000)
     tokens['labels'] = [
         -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
     ]
