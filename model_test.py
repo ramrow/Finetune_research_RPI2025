@@ -23,7 +23,7 @@ messages = [
 ]
 
 output = pipe(messages, max_new_tokens=4096)
-print(output[0])
+print(output[0]['generated_text'][-1]['content'])
 # md = AutoModelForCausalLM.from_pretrained(
 #     model_name_or_path,
 #     # torch_dtype="auto",
