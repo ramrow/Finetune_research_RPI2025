@@ -22,8 +22,8 @@ messages = [
     {"role": "user", "content": text}
 ]
 
-output = pipe(messages, max_new_tokens=2056)
-print(output[0][-1])
+output = pipe(messages, max_new_tokens=4096)
+print(output[0])
 # md = AutoModelForCausalLM.from_pretrained(
 #     model_name_or_path,
 #     # torch_dtype="auto",
