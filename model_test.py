@@ -22,7 +22,8 @@ messages = [
     {"role": "user", "content": text}
 ]
 
-output = pipe(messages,max_new_tokens=tk.model_max_length)#max_new_tokens=3000)
+print(tk.model_max_length)
+output = pipe(messages,max_new_tokens=512)#max_new_tokens=3000)
 result = output[0]['generated_text'][-1]['content']
 print(result)
 # print(len(output))
