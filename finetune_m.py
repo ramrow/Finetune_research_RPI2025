@@ -47,25 +47,6 @@ def apply_chat_template(example):
     messages = [
         {"role": "user", "content": example['text']},
         {"role": "assistant", "content": format_files(example)}
-        # {"role": "0/nuTilda", "content": example['0/nuTilda']},
-        # {"role": "system/controlDict", "content": example['system/controlDict']},
-        # {"role": "system/fvSchemes", "content": example['system/fvSchemes']},
-        # {"role": "0/p", "content": example['0/p']},
-        # {"role": "constant/turbulenceProperties", "content": example['constant/turbulenceProperties']},
-        # {"role": "system/fvSolution", "content": example['system/fvSolution']},
-        # {"role": "0/nut", "content": example['0/nut']},
-        # {"role": "0/k", "content": example['0/k']},
-        # {"role": "0/U", "content": example['0/U']},
-        # {"role": "constant/transportProperties", "content": example['constant/transportProperties']},
-        # {"role": "0/epsilon", "content": example['0/epsilon']},
-        # {"role": "0/sigma", "content": example['0/sigma']},
-        # {"role": "constant/fvOptions", "content": example['constant/fvOptions']},
-        # {"role": "0/omega", "content": example['0/omega']},
-        # {"role": "0/s", "content": example['0/s']},
-        # {"role": "constant/MRFProperties", "content": example['constant/MRFProperties']},
-        # {"role": "constant/dynamicMeshDict", "content": example['constant/dynamicMeshDict']},
-        # {"role": "system/topoSetDict", "content": example['system/topoSetDict']},
-        # {"role": "allrun", "content": example['allrun']}
     ]
     prompt = tokenizer.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True
@@ -73,7 +54,7 @@ def apply_chat_template(example):
     return {"text": prompt}
 
 def tokenize_data(example):
-    tokens = tokenizer(example['text'], padding="max_length", max_length=5000)
+    tokens = tokenizer(example['text'], padding="longest", return_tensors="pt")
     tokens['labels'] = [
         -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
     ]
@@ -148,3 +129,24 @@ trainer.train()
 trainer.model.save_pretrained(new_model)
 trainer.processing_class.save_pretrained(new_model)
 trainer.evaluate()
+
+
+        # {"role": "0/nuTilda", "content": example['0/nuTilda']},
+        # {"role": "system/controlDict", "content": example['system/controlDict']},
+        # {"role": "system/fvSchemes", "content": example['system/fvSchemes']},
+        # {"role": "0/p", "content": example['0/p']},
+        # {"role": "constant/turbulenceProperties", "content": example['constant/turbulenceProperties']},
+        # {"role": "system/fvSolution", "content": example['system/fvSolution']},
+        # {"role": "0/nut", "content": example['0/nut']},
+        # {"role": "0/k", "content": example['0/k']},
+        # {"role": "0/U", "content": example['0/U']},
+        # {"role": "constant/transportProperties", "content": example['constant/transportProperties']},
+        # {"role": "0/epsilon", "content": example['0/epsilon']},
+        # {"role": "0/sigma", "content": example['0/sigma']},
+        # {"role": "constant/fvOptions", "content": example['constant/fvOptions']},
+        # {"role": "0/omega", "content": example['0/omega']},
+        # {"role": "0/s", "content": example['0/s']},
+        # {"role": "constant/MRFProperties", "content": example['constant/MRFProperties']},
+        # {"role": "constant/dynamicMeshDict", "content": example['constant/dynamicMeshDict']},
+        # {"role": "system/topoSetDict", "content": example['system/topoSetDict']},
+        # {"role": "allrun", "content": example['allrun']}
