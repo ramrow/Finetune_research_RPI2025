@@ -33,7 +33,7 @@ def format_files(example):
         "constant/transportProperties": example["constant/transportProperties"],
         "0/epsilon": example["0/epsilon"],
         "0/sigma": example["0/sigma"],
-        
+
         "constant/fvOptions": example["constant/fvOptions"],
         "0/omega": example["0/omega"],
         "0/s": example["0/s"],
@@ -55,14 +55,14 @@ def apply_chat_template(example):
     return {"text": prompt}
 
 def tokenize_data(example):
-    tokens = tokenizer(example['text'], padding="longest")
+    tokens = tokenizer(example['text'], padding="max_length", truncation=True, max_length=8192)
     tokens['labels'] = [
         -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
     ]
     return tokens
 
 ds = (load_dataset("finalform/processed_foam", split="train")).shuffle()
-model="codellama/CodeLlama-7b-Instruct-hf"
+model="codellama/CodeLlama-13b-Instruct-hf"
 new_model = "llama-foam"
 
 md = AutoModelForCausalLM.from_pretrained(
