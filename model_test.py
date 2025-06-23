@@ -4,6 +4,7 @@ import os
 
 # model_name_or_path = "finalform/foam-nuTilda-sft-llama2-13B"
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 model_name_or_path = "finalform/foamllama-13B"
 
@@ -22,8 +23,7 @@ messages = [
     {"role": "user", "content": text}
 ]
 
-print(tk.model_max_length)
-output = pipe(messages)#max_new_tokens=3000)
+output = pipe(messages, max_new_tokens=4000)#max_new_tokens=3000)
 result = output[0]['generated_text'][-1]['content']
 print(result)
 # print(len(output))
