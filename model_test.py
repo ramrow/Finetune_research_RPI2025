@@ -4,22 +4,22 @@ import os
 
 # model_name_or_path = "finalform/foam-nuTilda-sft-llama2-13B"
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
-os.environ["CUDA_VISIBLE_DEVICES"]="1"
+# os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 model_name_or_path = "finalform/foamllama-13B"
 
 md = AutoModelForCausalLM.from_pretrained(
     model_name_or_path,
     torch_dtype=torch.float16,
-    # device_map="auto"
-    device_map={"":1}
+    device_map="auto"
+    # device_map={"":1}
 )
 tk = AutoTokenizer.from_pretrained(model_name_or_path)
 
 text = "<s>[INST] Conduct a RAS simulation for the turbulent flow over a backward-facing step using the pimpleFoam solver. Set the inlet velocity to 10 m/s and the outlet pressure to 0. The walls should be no-slip, and the front and back should be empty. Use the k-epsilon turbulence model for this simulation. The fluid is Newtonian with a kinematic viscosity of 1e-5 m²/s. The control settings are: endTime = 0.40 and writeInterval = 0.005."
 
-# pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map="auto")
-pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map={"":1})
+pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map="auto")
+# pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map={"":1})
 
 messages = [
     {"role": "user", "content": text}
