@@ -56,9 +56,8 @@ tokenizer = AutoTokenizer.from_pretrained(model, trust_remote_code=True)
 tokenizer.return_tensors = "pt"
 
 tokenizer.pad_token = tokenizer.eos_token
-if tokenizer.pad_token is None:
-    tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-    md.resize_token_embeddings(len(tokenizer))
+print(tokenizer.eos_token)
+print(tokenizer.pad_token)
 
 tokenizer.padding_side = "right"
 tokenizer.chat_template = "{% for message in messages %}{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}"
