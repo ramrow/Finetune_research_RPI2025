@@ -38,13 +38,14 @@ def tokenize_data(example):
 
 
 ds = (load_dataset("finalform/formated_foam", split="train")).shuffle()
-model="codellama/CodeLlama-7b-Instruct-hf"
-new_model = "llama-foam"
+model="Qwen/Qwen-7B"
+new_model = "qwen-foam"
 
 md = AutoModelForCausalLM.from_pretrained(
     model,
     quantization_config=quant_config,
-    device_map="auto"
+    device_map="auto",
+    bf16=True
 )
 md.config.use_cache = False
 md.config.pretraining_tp = 1
@@ -68,8 +69,8 @@ peft_params = LoraConfig(
 )
 
 training_args = SFTConfig(
-    output_dir="./llamaResultsFormatted",
-    # resume_from_checkpoint="./llamaResultsFormatted/checkpoint-",
+    output_dir="./qwen_results",
+    # resume_from_checkpoint="./qwen_results/checkpoint-",
     num_train_epochs=1,
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
