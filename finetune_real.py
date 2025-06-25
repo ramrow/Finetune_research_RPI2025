@@ -44,7 +44,6 @@ new_model = "llama-foam"
 md = AutoModelForCausalLM.from_pretrained(
     model,
     quantization_config=quant_config,
-    # device_map={"": 0}
     device_map="auto"
 )
 md.config.use_cache = False
@@ -74,8 +73,6 @@ training_args = SFTConfig(
     num_train_epochs=1,
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
-    # per_device_train_batch_size=1,
-    # per_device_eval_batch_size=1,
     gradient_accumulation_steps=2,
     optim="paged_adamw_32bit",
     save_steps=250,
@@ -94,13 +91,11 @@ training_args = SFTConfig(
 )
 
 peft_md = get_peft_model(md, peft_params)
-# peft_md = dispatch_model(peft_md, device_map={})
 
 trainer = SFTTrainer(
     model=peft_md,
     train_dataset=tokenized_ds['train'],
     eval_dataset=tokenized_ds['test'],
-    # peft_config=peft_params,
     args=training_args,
     processing_class=tokenizer,
 )
