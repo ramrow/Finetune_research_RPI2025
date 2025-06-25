@@ -5,6 +5,6 @@ token = input()
 api = HfApi(token=os.getenv(token))
 api.upload_folder(
     folder_path="./llama-foam",
-    repo_id="finalform/foamllama-13B",
+    repo_id="finalform/foamllama-7B",
     repo_type="model",
 )
