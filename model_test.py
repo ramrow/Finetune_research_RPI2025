@@ -2,17 +2,12 @@ from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
 import torch
 import os
 
-# model_name_or_path = "finalform/foam-nuTilda-sft-llama2-13B"
-# os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
-# os.environ["CUDA_VISIBLE_DEVICES"]="1"
-
 model_name_or_path = "finalform/foamllama-7B"
 
 md = AutoModelForCausalLM.from_pretrained(
     model_name_or_path,
     torch_dtype=torch.float16,
     device_map="auto"
-    # device_map={"":1}
 )
 tk = AutoTokenizer.from_pretrained(model_name_or_path)
 
@@ -20,14 +15,13 @@ prompt = "You are an expert in OpenFOAM simulation and numerical modeling. Your 
 text = "Conduct a transient simulation of fluid flow within an elbow duct using the icoFoam solver. The simulation involves a velocity inlet and a pressure outlet boundary condition, with no-slip conditions on the walls, and empty conditions on the front and back planes. Fluid enters vertically through velocity-inlet 1 at a speed of 1 m/s and through velocity-inlet 2 at a speed of 3 m/s, and exits via the pressure outlet. The kinematic viscosity is set to 0.01. Simulation control settings are as follows: endTime = 5, deltaT = 0.05, and writeInterval = 20. Please ensure that the generated file is complete, functional, and logically sound. Additionally, apply your domain expertise to verify that all numerical values are consistent with the user's requirements, maintaining accuracy and coherence."
 
 pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map="auto")
-# pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map={"":1})
 
 messages = [
     {"role": "system", "content": prompt},
     {"role": "user", "content": text}
 ]
 
-output = pipe(messages, max_new_tokens=3000)#max_new_tokens=3000)
+output = pipe(messages, max_new_tokens=3000)
 result = output[0]['generated_text'][-1]['content']
 print(result)
 # print(len(output))
