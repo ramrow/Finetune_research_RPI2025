@@ -30,7 +30,6 @@ def apply_chat_template(example):
     return {"text": prompt}
 
 def tokenize_data(example):
-    tokenizer.pad_token = tokenizer.eos_token
     tokens = tokenizer(example['text'], padding="max_length", max_length=4096)
     tokens['labels'] = [
         -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
@@ -54,13 +53,11 @@ md.config.pretraining_tp = 1
 
 tokenizer = AutoTokenizer.from_pretrained(model, trust_remote_code=True)
 tokenizer.return_tensors = "pt"
-
 tokenizer.pad_token_id = tokenizer.eod_id
 tokenizer.pad_token = '<|endoftext|>'
-
 tokenizer.padding_side = "right"
-tokenizer.chat_template = "{% for message in messages %}{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}"
 
+tokenizer.chat_template = "{% for message in messages %}{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}"
 
 organized_ds = ds.map(apply_chat_template)
 organized_ds = organized_ds.train_test_split(0.05)
