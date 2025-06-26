@@ -45,8 +45,9 @@ md = AutoModelForCausalLM.from_pretrained(
     model,
     quantization_config=quant_config,
     device_map="auto",
-    bf16=True,
-    trust_remote_code=True
+    # bf16=True,
+    trust_remote_code=True,
+    torch_dtype=torch.bfloat16,
 )
 md.config.use_cache = False
 md.config.pretraining_tp = 1
