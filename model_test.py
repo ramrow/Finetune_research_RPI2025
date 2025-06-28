@@ -22,7 +22,7 @@ messages = [
     {"role": "user", "content": text}
 ]
 
-output = pipe(messages, max_new_tokens=128)
+output = pipe(messages, max_new_tokens=256)
 result = output[0]['generated_text'][-1]['content']
 print(result)
 
