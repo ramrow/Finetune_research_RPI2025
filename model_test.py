@@ -2,7 +2,7 @@ from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
 import torch
 import os
 
-model_name_or_path = "finalform/foamllama-7B"
+model_name_or_path = "finalform/foamqwen-7B"
 
 md = AutoModelForCausalLM.from_pretrained(
     model_name_or_path,
