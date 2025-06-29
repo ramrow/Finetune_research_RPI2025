@@ -59,7 +59,7 @@ tokenizer.pad_token = '<|im_end|>'
 tokenizer.padding_side = "right"
 
 # tokenizer.chat_template = "{% for message in messages %}{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}"
-tokenizer.chat_template = "{% for message in messages %}{% if message['role'] == 'assistant' %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}{% else %}{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}{% endif %}(% endfor %}"
+tokenizer.chat_template = "{% for message in messages %}{% if message['role'] == 'assistant' %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}{% else %}{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}{% endif %}{% endfor %}"
 
 organized_ds = ds.map(apply_chat_template)
 organized_ds = organized_ds.train_test_split(0.05)
