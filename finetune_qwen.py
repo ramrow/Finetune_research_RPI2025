@@ -66,7 +66,7 @@ tokenizer.chat_template =   "{% for message in messages %}{% if loop.first and m
 organized_ds = ds.map(apply_chat_template)
 organized_ds = organized_ds.train_test_split(0.05)
 tokenized_ds = organized_ds.map(tokenize_data)
-tokenized_ds = tokenized_ds.remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description"])
+tokenized_ds = tokenized_ds.remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
 
 peft_params = LoraConfig(
     lora_alpha=16,
