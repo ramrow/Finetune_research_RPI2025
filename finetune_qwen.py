@@ -1,6 +1,7 @@
 import os
 import torch
 from datasets import load_dataset
+from accelerate import Accelerator
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -54,14 +55,16 @@ md.config.pretraining_tp = 1
 
 tokenizer = AutoTokenizer.from_pretrained(model, trust_remote_code=True)
 tokenizer.return_tensors = "pt"
-tokenizer.pad_token_id = tokenizer.eod_id
+# tokenizer.pad_token_id = tokenizer.eod_id
 tokenizer.pad_token = '<|endoftext|>'
 tokenizer.padding_side = "right"
 
+#######################
 tokenizer.chat_template =   "{% for message in messages %}{% if loop.first and message['role'] != 'system' %}" \
                             "{{ '<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n' }}{% endif %}{{ " \
                             "'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>\n' }}{% if " \
                             "loop.last and add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}{% endfor %}"
+#######################
 
 organized_ds = ds.map(apply_chat_template)
 organized_ds = organized_ds.train_test_split(0.05)
