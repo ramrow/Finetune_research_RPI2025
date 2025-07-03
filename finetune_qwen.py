@@ -31,7 +31,8 @@ def apply_chat_template(example):
     return {"text": prompt}
 
 def tokenize_data(example):
-    tokens = tokenizer(example['text'], padding="longest",)
+    # tokens = tokenizer(example['text'], padding="longest",)
+    tokens = tokenizer(example['text'], padding="max_length", max_length=1028, truncation=True)
     tokens['labels'] = [
         -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
     ]
@@ -55,7 +56,6 @@ md.config.pretraining_tp = 1
 
 tokenizer = AutoTokenizer.from_pretrained(model, trust_remote_code=True)
 tokenizer.return_tensors = "pt"
-# tokenizer.pad_token_id = tokenizer.eod_id
 tokenizer.pad_token = '<|endoftext|>'
 tokenizer.padding_side = "right"
 
