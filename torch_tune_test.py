@@ -11,7 +11,7 @@ from trl import SFTTrainer, SFTConfig
 from accelerate import Accelerator
 
 accelerator = Accelerator()
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+# os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 quant_config = BitsAndBytesConfig(
     load_in_4bit=True,
