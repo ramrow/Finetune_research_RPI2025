@@ -37,7 +37,7 @@ def tokenize_data(example):
     return tokens
 
 
-ds = (load_dataset("finalform/meshed_foam", split="train")).shuffle()
+ds = (load_dataset("finalform/meshed_foam")).shuffle()
 print(ds)
 print(ds['train'])
 model = "finalform/foamqwen-7B"
