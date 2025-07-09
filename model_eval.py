@@ -38,6 +38,8 @@ def tokenize_data(example):
 
 
 ds = (load_dataset("finalform/meshed_foam", split="train")).shuffle()
+print(ds)
+print(ds['train'])
 model = "finalform/foamqwen-7B"
 
 md = AutoModelForCausalLM.from_pretrained(
