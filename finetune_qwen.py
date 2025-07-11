@@ -78,7 +78,7 @@ peft_params = LoraConfig(
     r=32, #change rank
     bias="none",
     task_type="CAUSAL_LM",
-    target_modules="all-linear"
+    target_modules=["c_attn", "c_proj"]
 )
 
 training_args = SFTConfig(
