@@ -52,6 +52,7 @@ md = AutoModelForCausalLM.from_pretrained(
 )
 md.config.use_cache = False
 md.config.pretraining_tp = 1
+md = torch.compile(md)
 
 tokenizer = AutoTokenizer.from_pretrained(model, trust_remote_code=True)
 tokenizer.return_tensors = "pt"
