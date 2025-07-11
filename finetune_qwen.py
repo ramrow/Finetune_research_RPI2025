@@ -39,7 +39,7 @@ def tokenize_data(example):
     return tokens
 
 
-ds = (load_dataset("finalform/formated_foam", split="train")).shuffle()
+ds = (load_dataset("finalform/split_foam",))
 model="Qwen/Qwen-7B"
 new_model = "qwen-foam"
 
@@ -65,10 +65,12 @@ tokenizer.chat_template =   "{% for message in messages %}{% if loop.first and m
                             "loop.last and add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}{% endfor %}"
 #######################
 
-organized_ds = ds.map(apply_chat_template)
-organized_ds = organized_ds.train_test_split(0.05)
-tokenized_ds = organized_ds.map(tokenize_data)
-tokenized_ds = tokenized_ds.remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
+train_ds = ds['train'].map(apply_chat_template)
+test_ds = ds['test'].map(apply_chat_template)
+tokenized_train_ds = train_ds.map(tokenize_data)
+tokenized_test_ds = test_ds.map(tokenize_data)
+tokenized_train_ds = tokenized_train_ds.remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
+tokenized_test_ds = tokenized_test_ds.remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
 
 peft_params = LoraConfig(
     lora_alpha=16,
@@ -84,9 +86,9 @@ training_args = SFTConfig(
     # resume_from_checkpoint="./qwen_results/checkpoint-",
     # compute loss every few steps 1.5k/step
     num_train_epochs=1,
-    per_device_train_batch_size=2,
-    per_device_eval_batch_size=2,
-    gradient_accumulation_steps=2,
+    per_device_train_batch_size=3,
+    per_device_eval_batch_size=3,
+    gradient_accumulation_steps=8,
     optim="paged_adamw_32bit",
     save_steps=250,
     logging_steps=50,
@@ -101,15 +103,14 @@ training_args = SFTConfig(
     lr_scheduler_type="constant",
     report_to="tensorboard",
     packing=False,
-    max_length=1028
 )
 
 peft_md = get_peft_model(md, peft_params)
 
 trainer = SFTTrainer(
     model=peft_md,
-    train_dataset=tokenized_ds['train'],
-    eval_dataset=tokenized_ds['test'],
+    train_dataset=tokenized_train_ds,
+    eval_dataset=tokenized_test_ds,
     args=training_args,
     processing_class=tokenizer,
 )
