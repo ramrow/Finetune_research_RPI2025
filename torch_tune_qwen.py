@@ -104,9 +104,12 @@ tokenizer.chat_template =   "{% for message in messages %}{% if loop.first and m
                             "loop.last and add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}{% endfor %}"
 #######################
 
-organized_ds = ds.map(apply_chat_template)
-tokenized_ds = organized_ds.map(tokenize_data)
-tokenized_ds = tokenized_ds.remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
+train_ds = ds['train'].map(apply_chat_template)
+test_ds = ds['test'].map(apply_chat_template)
+tokenized_train_ds = train_ds.map(tokenize_data)
+tokenized_test_ds = test_ds.map(tokenize_data)
+tokenized_train_ds = tokenized_train_ds.remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
+tokenized_test_ds = tokenized_test_ds.remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
 
 peft_params = LoraConfig(
     lora_alpha=16,
@@ -148,8 +151,8 @@ trainer = CustomSFTTrainer(
     model= peft_md,
     args=training_args,
     processing_class=tokenizer,
-    train_dataset=tokenized_ds['train'],
-    eval_dataset=tokenized_ds['test'],
+    train_dataset=tokenized_train_ds,
+    eval_dataset=tokenized_test_ds,
 )
 trainer.train()
 trainer.model.save_pretrained(new_model)
