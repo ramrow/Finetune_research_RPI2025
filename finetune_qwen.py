@@ -78,20 +78,21 @@ peft_params = LoraConfig(
     r=32, #change rank
     bias="none",
     task_type="CAUSAL_LM",
-    target_modules=["c_attn", "c_proj"]
+    target_modules="all-linear"
 )
 
 training_args = SFTConfig(
     output_dir="./qwen_results",
+    torch_compile=True,
     # resume_from_checkpoint="./qwen_results/checkpoint-",
     # compute loss every few steps 1.5k/step
     num_train_epochs=1,
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=8,
-    optim="paged_adamw_32bit",
+    optim="adamw_torch_fused", #paged_adamw_32bit
     save_steps=250,
-    logging_steps=50,
+    logging_steps=25,
     learning_rate=2e-4,
     weight_decay=0.001,
     fp16=False,
