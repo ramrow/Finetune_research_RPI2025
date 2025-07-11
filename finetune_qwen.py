@@ -47,7 +47,6 @@ md = AutoModelForCausalLM.from_pretrained(
     model,
     quantization_config=quant_config,
     device_map="auto",
-    # bf16=True,
     trust_remote_code=True,
     torch_dtype=torch.bfloat16,
 )
@@ -84,7 +83,7 @@ training_args = SFTConfig(
     output_dir="./qwen_results",
     # resume_from_checkpoint="./qwen_results/checkpoint-",
     # compute loss every few steps 1.5k/step
-    num_train_epochs=2,
+    num_train_epochs=1,
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=2,
@@ -102,6 +101,7 @@ training_args = SFTConfig(
     lr_scheduler_type="constant",
     report_to="tensorboard",
     packing=False,
+    max_length=1028
 )
 
 peft_md = get_peft_model(md, peft_params)
