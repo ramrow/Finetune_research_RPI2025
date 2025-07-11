@@ -77,7 +77,7 @@ def tokenize_data(example):
     return tokens
 
 
-ds = (load_dataset("finalform/formated_foam",))
+ds = (load_dataset("finalform/split_foam",))
 model="Qwen/Qwen-7B"
 new_model = "qwen-foam"
 
