@@ -104,7 +104,7 @@ training_args = SFTConfig(
     report_to="tensorboard",
     packing=False,
 )
-
+print(md)
 peft_md = get_peft_model(md, peft_params)
 
 trainer = SFTTrainer(
