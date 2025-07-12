@@ -151,7 +151,7 @@ class torch_prep():
 
         return model, tk, optimizer, lr_scheduler, train_dl, test_dl
     
-    def train(self, md, tk, optimizer, lr_sch, train_dl, test_dl):
+    def train_(self, md, tk, optimizer, lr_sch, train_dl, test_dl):
 
         training_args = SFTConfig(
             output_dir="./qwen_results",
@@ -189,4 +189,11 @@ class torch_prep():
         trainer.processing_class.save_pretrained(self.new_model)
         trainer.evaluate()
 
+    def process_(self):
+        md, tk, train, test = self.pre_loading
+        md_, tk_, opt, sch, trl, tsl = self.prep_(md, tk, train, test)
+        self.train_(md_, tk_, opt, sch, trl, tsl)
 
+if __name__ == "__main__":
+    tt = torch_prep()
+    tt.process_()
