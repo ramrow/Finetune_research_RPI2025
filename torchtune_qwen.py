@@ -148,7 +148,7 @@ class torch_prep():
             md, optimizer, lr_scheduler
         )
 
-        return model, tk, optimizer, lr_scheduler, train_dl, test_dl
+        return model, tk, optimizer, lr_scheduler, train_dl, test_dl, train_ds, test_ds
     
     def train_(self, md, tk, optimizer, lr_sch, train_dl, test_dl, train_ds, test_ds):
 
@@ -183,15 +183,15 @@ class torch_prep():
             eval_dataset=test_ds,
             args=training_args,
         )
-        trainer.custom_train(optimizer, lr_sch)
+        trainer.custom_train(optimizer, lr_sch, train_dl)
         trainer.model.save_pretrained(self.new_model)
         trainer.processing_class.save_pretrained(self.new_model)
         trainer.evaluate()
 
     def process_(self):
         md, tk, train, test = self.pre_loading()
-        md_, tk_, opt, sch, trl, tsl = self.prep_(md, tk, train, test)
-        self.train_(md_, tk_, opt, sch, trl, tsl, train, test)
+        md_, tk_, opt, sch, trl, tsl, trd, tsd = self.prep_(md, tk, train, test)
+        self.train_(md_, tk_, opt, sch, trl, tsl, trd, tsd)
 
 if __name__ == "__main__":
     tt = torch_prep()
