@@ -48,7 +48,6 @@ class torch_prep():
                 for step, batch in enumerate(ds):   
                     outputs = model(**batch)
                     loss = outputs.loss
-                    # loss.backward()
                     accelerator.backward(loss)
                     self.optimizer.step()
                     self.lr_scheduler.step()
@@ -103,6 +102,7 @@ class torch_prep():
         tokenizer = AutoTokenizer.from_pretrained(self.model_name, trust_remote_code=True)
         tokenizer.return_tensors = "pt"
         tokenizer.pad_token = '<|endoftext|>'
+        tokenizer.eos_token = '<|endoftext|>'
         tokenizer.padding_side = "right"
 
         tokenizer.chat_template =   "{% for message in messages %}{% if loop.first and message['role'] != 'system' %}" \
@@ -133,7 +133,7 @@ class torch_prep():
             return tokens
 
         data_collator = DataCollatorForLanguageModeling(tokenizer=tk, mlm=False)
-        optimizer = torch.optim.AdamW(md.parameters(), lr=2e-4, weight_decay=0.01)
+        optimizer = torch.optim.AdamW(md.parameters(), lr=3e-4, weight_decay=0.001)
         lr_scheduler = get_scheduler("constant", optimizer=optimizer)
 
         train_ds = ((train.map(apply_chat_template)).map(tokenize_data)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
@@ -157,14 +157,14 @@ class torch_prep():
             # resume_from_checkpoint="./qwen_results/checkpoint-",
             # compute loss every few steps 1.5k/step
             num_train_epochs=1,
-            per_device_train_batch_size=2,
-            per_device_eval_batch_size=2,
-            gradient_accumulation_steps=4,
+            per_device_train_batch_size=3,
+            per_device_eval_batch_size=3,
+            gradient_accumulation_steps=8,
             optim="paged_adamw_32bit",
             save_steps=250,
             logging_steps=25,
-            learning_rate=2e-4,
-            weight_decay=0.01,
+            learning_rate=3e-4,
+            weight_decay=0.001,
             fp16=False,
             bf16=True,
             max_grad_norm=0.3,
