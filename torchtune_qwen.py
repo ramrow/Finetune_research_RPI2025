@@ -12,7 +12,6 @@ from transformers import (
     )
 from torch.utils.data import( 
     DataLoader,
-    IterableDataset,
     )
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig
@@ -137,8 +136,8 @@ class torch_prep():
         optimizer = torch.optim.AdamW(md.parameters(), lr=2e-4, weight_decay=0.01)
         lr_scheduler = get_scheduler("constant", optimizer=optimizer)
 
-        train_ds = ((train.map(apply_chat_template)).map(tokenize_data)).remove(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
-        test_ds = ((test.map(apply_chat_template)).map(tokenize_data)).remove(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
+        train_ds = ((train.map(apply_chat_template)).map(tokenize_data)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
+        test_ds = ((test.map(apply_chat_template)).map(tokenize_data)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
         train_dl = DataLoader(train_ds, batch_size, shuffle=False, collate_fn=data_collator)
         test_dl = DataLoader(test_ds, batch_size, shuffle=False, collate_fn=data_collator)
 
