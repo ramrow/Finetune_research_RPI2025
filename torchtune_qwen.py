@@ -34,8 +34,8 @@ def record(metrics, locals, accelerator, save_file="metrics.json"):
 
 class torch_prep():
     class CustomSFTTrainer(SFTTrainer):
-        def custom_train(self, optimizer, lr_sch, resume_from_checkpoint=None, trial=None, ignore_keys_for_eval=None, **kwargs):
-            num_training_steps = len(self.get_train_dataloader()) * NUM_EPOCHES
+        def custom_train(self, optimizer, lr_sch, ds, resume_from_checkpoint=None, trial=None, ignore_keys_for_eval=None, **kwargs):
+            num_training_steps = len(ds) * NUM_EPOCHES
             self.optimizer=optimizer
             self.lr_scheduler=lr_sch
             model = self.model
@@ -45,7 +45,7 @@ class torch_prep():
                 process_idx = accelerator.process_index
                 # metrics = {"loss": [], "accuracy": [], "steps": []}
                 locals = {"loss_sum": 0.0, "corrects_sum": 0, "valid_toks": 0, "train_step": 0}
-                for step, batch in enumerate(self.get_train_dataloader()):   
+                for step, batch in enumerate(ds):   
                     outputs = model(**batch)
                     loss = outputs.loss
                     # loss.backward()
@@ -150,7 +150,7 @@ class torch_prep():
 
         return model, tk, optimizer, lr_scheduler, train_dl, test_dl
     
-    def train_(self, md, tk, optimizer, lr_sch, train_dl, test_dl):
+    def train_(self, md, tk, optimizer, lr_sch, train_dl, test_dl, train_ds, test_ds):
 
         training_args = SFTConfig(
             output_dir="./qwen_results",
@@ -179,8 +179,8 @@ class torch_prep():
         trainer = self.CustomSFTTrainer(
             model=md,
             processing_class=tk,
-            train_dataset=train_dl,
-            eval_dataset=test_dl,
+            train_dataset=train_ds,
+            eval_dataset=test_ds,
             args=training_args,
         )
         trainer.custom_train(optimizer, lr_sch)
@@ -191,7 +191,7 @@ class torch_prep():
     def process_(self):
         md, tk, train, test = self.pre_loading()
         md_, tk_, opt, sch, trl, tsl = self.prep_(md, tk, train, test)
-        self.train_(md_, tk_, opt, sch, trl, tsl)
+        self.train_(md_, tk_, opt, sch, trl, tsl, train, test)
 
 if __name__ == "__main__":
     tt = torch_prep()
