@@ -85,7 +85,7 @@ class torch_prep():
                                 save_steps=250,
                                 logging_steps=25,
                                 learning_rate=3e-4,
-                                weight_decay=0.001,
+                                weight_decay=0.01,
                                 fp16=False,
                                 bf16=True,
                                 max_grad_norm=0.3,
@@ -158,7 +158,7 @@ class torch_prep():
             return tokens
 
         data_collator = DataCollatorForLanguageModeling(tokenizer=tk, mlm=False)
-        optimizer = torch.optim.AdamW(md.parameters(), lr=3e-4, weight_decay=0.001)
+        optimizer = torch.optim.AdamW(md.parameters(), lr=self.training_args.learning_rate, weight_decay=self.training_args.weight_decay)
         lr_scheduler = get_scheduler("constant", optimizer=optimizer)
 
         train_ds = ((train.map(apply_chat_template)).map(tokenize_data)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
