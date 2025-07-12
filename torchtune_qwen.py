@@ -16,26 +16,27 @@ from torch.utils.data import(
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig
 
-NUM_EPOCHES = 2
 accelerator = Accelerator()
-def record(metrics, locals, accelerator, save_file="metrics.json"):
-    accelerator.wait_for_everyone()
-    local_stats = torch.tensor([locals["loss_sum"], locals["corrects_sum"], locals["valid_toks"], locals["train_step"]], device=accelerator.device)
-    # global_loss, global_corrects_sum, global_valid_toks, global_train_step = accelerator.reduce(local_stats, reduction="sum")
-    # if accelerator.is_main_process:
-    #     avg_loss = global_loss.item() / global_train_step.item()
-    #     metrics["loss"].append(avg_loss)
-    #     metrics["accuracy"].append(global_corrects_sum.item() / global_valid_toks.item())
-    #     metrics["steps"].append(global_train_step.item())
-    #     logging.info(f"Current step's ({locals["train_step"]}) average loss is {avg_loss:.4f}")
-    #     dicts.save_as_json(metrics, save_file)
-    accelerator.wait_for_everyone()
-    return metrics
+# def record(metrics, locals, accelerator, save_file="metrics.json"):
+#     accelerator.wait_for_everyone()
+#     local_stats = torch.tensor([locals["loss_sum"], locals["corrects_sum"], locals["valid_toks"], locals["train_step"]], device=accelerator.device)
+#     # global_loss, global_corrects_sum, global_valid_toks, global_train_step = accelerator.reduce(local_stats, reduction="sum")
+#     # if accelerator.is_main_process:
+#     #     avg_loss = global_loss.item() / global_train_step.item()
+#     #     metrics["loss"].append(avg_loss)
+#     #     metrics["accuracy"].append(global_corrects_sum.item() / global_valid_toks.item())
+#     #     metrics["steps"].append(global_train_step.item())
+#     #     logging.info(f"Current step's ({locals["train_step"]}) average loss is {avg_loss:.4f}")
+#     #     dicts.save_as_json(metrics, save_file)
+#     accelerator.wait_for_everyone()
+#     return metrics
 
 class torch_prep():
     class CustomSFTTrainer(SFTTrainer):
         def custom_train(self, optimizer, lr_sch, ds, resume_from_checkpoint=None, trial=None, ignore_keys_for_eval=None, **kwargs):
+            NUM_EPOCHES=self.args.num_train_epochs
             num_training_steps = len(ds) * NUM_EPOCHES
+            print(f"total training steps: {num_training_steps}")
             self.optimizer=optimizer
             self.lr_scheduler=lr_sch
             # model = self.model
@@ -72,6 +73,30 @@ class torch_prep():
         self.model_name = "Qwen/Qwen-7B"
         self.new_model = "qwen-foam"
         self.data_name = "finalform/split_foam"
+        self.training_args = SFTConfig(
+                                output_dir="./qwen_results",
+                                # resume_from_checkpoint="./qwen_results/checkpoint-",
+                                # compute loss every few steps 1.5k/step
+                                num_train_epochs=1,
+                                per_device_train_batch_size=3,
+                                per_device_eval_batch_size=3,
+                                gradient_accumulation_steps=8,
+                                optim="paged_adamw_32bit",
+                                save_steps=250,
+                                logging_steps=25,
+                                learning_rate=3e-4,
+                                weight_decay=0.001,
+                                fp16=False,
+                                bf16=True,
+                                max_grad_norm=0.3,
+                                max_steps=-1,
+                                warmup_ratio=0.03,
+                                group_by_length=True,
+                                lr_scheduler_type="constant",
+                                report_to="tensorboard",
+                                packing=False,
+                            )
+
 
     def pre_loading(self):
 
@@ -113,7 +138,7 @@ class torch_prep():
         peft_md =  get_peft_model(md, peft_params)
         return peft_md, tokenizer, ds['train'], ds['test']
     
-    def prep_(self, md, tk, train, test, batch_size=2):
+    def prep_(self, md, tk, train, test):
 
         def apply_chat_template(example):
             messages = [
@@ -138,8 +163,8 @@ class torch_prep():
 
         train_ds = ((train.map(apply_chat_template)).map(tokenize_data)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
         test_ds = ((test.map(apply_chat_template)).map(tokenize_data)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
-        train_dl = DataLoader(train_ds, batch_size, shuffle=False, collate_fn=data_collator)
-        test_dl = DataLoader(test_ds, batch_size, shuffle=False, collate_fn=data_collator)
+        train_dl = DataLoader(train_ds, self.training_args.per_device_train_batch_size, shuffle=False, collate_fn=data_collator)
+        test_dl = DataLoader(test_ds, self.training_args.per_device_eval_batch_size, shuffle=False, collate_fn=data_collator)
 
         train_dl = accelerator.prepare(train_dl)
         test_dl = accelerator.prepare(test_dl)
@@ -152,36 +177,12 @@ class torch_prep():
     
     def train_(self, md, tk, optimizer, lr_sch, train_dl, test_dl, train_ds, test_ds):
 
-        training_args = SFTConfig(
-            output_dir="./qwen_results",
-            # resume_from_checkpoint="./qwen_results/checkpoint-",
-            # compute loss every few steps 1.5k/step
-            num_train_epochs=1,
-            per_device_train_batch_size=3,
-            per_device_eval_batch_size=3,
-            gradient_accumulation_steps=8,
-            optim="paged_adamw_32bit",
-            save_steps=250,
-            logging_steps=25,
-            learning_rate=3e-4,
-            weight_decay=0.001,
-            fp16=False,
-            bf16=True,
-            max_grad_norm=0.3,
-            max_steps=-1,
-            warmup_ratio=0.03,
-            group_by_length=True,
-            lr_scheduler_type="constant",
-            report_to="tensorboard",
-            packing=False,
-        )
-
         trainer = self.CustomSFTTrainer(
             model=md,
             processing_class=tk,
             train_dataset=train_ds,
             eval_dataset=test_ds,
-            args=training_args,
+            args=self.training_args,
         )
         trainer.custom_train(optimizer, lr_sch, train_dl)
         trainer.model.save_pretrained(self.new_model)
