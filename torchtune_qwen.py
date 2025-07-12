@@ -74,25 +74,25 @@ class torch_prep():
         self.new_model = "qwen-foam"
         self.data_name = "finalform/split_foam"
 
-        self.output_dir="./qwen_results",
-        self.num_train_epochs=1,
-        self.per_device_train_batch_size=3,
-        self.per_device_eval_batch_size=3,
-        self.gradient_accumulation_steps=8,
-        self.optim="paged_adamw_32bit",
-        self.save_steps=250,
-        self.logging_steps=25,
-        self.learning_rate=3e-4,
-        self.weight_decay=0.01,
-        self.fp16=False,
-        self.bf16=True,
-        self.max_grad_norm=0.3,
-        self.max_steps=-1,
-        self.warmup_ratio=0.03,
-        self.group_by_length=True,
-        self.lr_scheduler_type="constant",
-        self.report_to="tensorboard",
-        self.packing=False,
+        self.output_dir="./qwen_results"
+        self.num_train_epochs=1
+        self.per_device_train_batch_size=3
+        self.per_device_eval_batch_size=3
+        self.gradient_accumulation_steps=8
+        self.optim="paged_adamw_32bit"
+        self.save_steps=250
+        self.logging_steps=25
+        self.learning_rate=3e-4
+        self.weight_decay=0.01
+        self.fp16=False
+        self.bf16=True
+        self.max_grad_norm=0.3
+        self.max_steps=-1
+        self.warmup_ratio=0.03
+        self.group_by_length=True
+        self.lr_scheduler_type="constant"
+        self.report_to="tensorboard"
+        self.packing=False
 
 
     def pre_loading(self):
@@ -155,7 +155,7 @@ class torch_prep():
             return tokens
 
         data_collator = DataCollatorForLanguageModeling(tokenizer=tk, mlm=False)
-        optimizer = torch.optim.AdamW(md.parameters(), lr=self.learning_rate[0], weight_decay=self.weight_decay[0])
+        optimizer = torch.optim.AdamW(md.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
         lr_scheduler = get_scheduler("constant", optimizer=optimizer)
 
         train_ds = ((train.map(apply_chat_template)).map(tokenize_data)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
