@@ -190,7 +190,7 @@ class torch_prep():
         trainer.evaluate()
 
     def process_(self):
-        md, tk, train, test = self.pre_loading
+        md, tk, train, test = self.pre_loading()
         md_, tk_, opt, sch, trl, tsl = self.prep_(md, tk, train, test)
         self.train_(md_, tk_, opt, sch, trl, tsl)
 
