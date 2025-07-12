@@ -155,6 +155,7 @@ class torch_prep():
             return tokens
 
         data_collator = DataCollatorForLanguageModeling(tokenizer=tk, mlm=False)
+        print(self.learning_rate)
         optimizer = torch.optim.AdamW(md.parameters(), lr=float(self.learning_rate), weight_decay=float(self.weight_decay))
         lr_scheduler = get_scheduler("constant", optimizer=optimizer)
 
