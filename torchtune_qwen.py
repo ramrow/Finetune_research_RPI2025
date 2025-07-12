@@ -181,7 +181,7 @@ class torch_prep():
             processing_class=tk,
             train_dataset=train_dl,
             eval_dataset=test_dl,
-            training_args=training_args,
+            args=training_args,
         )
         trainer.custom_train(optimizer, lr_sch)
         trainer.model.save_pretrained(self.new_model)
