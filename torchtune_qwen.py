@@ -73,29 +73,26 @@ class torch_prep():
         self.model_name = "Qwen/Qwen-7B"
         self.new_model = "qwen-foam"
         self.data_name = "finalform/split_foam"
-        self.training_args = SFTConfig(
-                                output_dir="./qwen_results",
-                                # resume_from_checkpoint="./qwen_results/checkpoint-",
-                                # compute loss every few steps 1.5k/step
-                                num_train_epochs=1,
-                                per_device_train_batch_size=2,
-                                per_device_eval_batch_size=2,
-                                gradient_accumulation_steps=8,
-                                optim="paged_adamw_32bit",
-                                save_steps=250,
-                                logging_steps=25,
-                                learning_rate=3e-4,
-                                weight_decay=0.01,
-                                fp16=False,
-                                bf16=True,
-                                max_grad_norm=0.3,
-                                max_steps=-1,
-                                warmup_ratio=0.03,
-                                group_by_length=True,
-                                lr_scheduler_type="constant",
-                                report_to="tensorboard",
-                                packing=False,
-                            )
+
+        self.output_dir="./qwen_results",
+        self.num_train_epochs=1,
+        self.per_device_train_batch_size=3,
+        self.per_device_eval_batch_size=3,
+        self.gradient_accumulation_steps=8,
+        self.optim="paged_adamw_32bit",
+        self.save_steps=250,
+        self.logging_steps=25,
+        self.learning_rate=3e-4,
+        self.weight_decay=0.01,
+        self.fp16=False,
+        self.bf16=True,
+        self.max_grad_norm=0.3,
+        self.max_steps=-1,
+        self.warmup_ratio=0.03,
+        self.group_by_length=True,
+        self.lr_scheduler_type="constant",
+        self.report_to="tensorboard",
+        self.packing=False,
 
 
     def pre_loading(self):
@@ -158,13 +155,13 @@ class torch_prep():
             return tokens
 
         data_collator = DataCollatorForLanguageModeling(tokenizer=tk, mlm=False)
-        optimizer = torch.optim.AdamW(md.parameters(), lr=self.training_args.learning_rate, weight_decay=self.training_args.weight_decay)
+        optimizer = torch.optim.AdamW(md.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
         lr_scheduler = get_scheduler("constant", optimizer=optimizer)
 
         train_ds = ((train.map(apply_chat_template)).map(tokenize_data)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
         test_ds = ((test.map(apply_chat_template)).map(tokenize_data)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
-        train_dl = DataLoader(train_ds, self.training_args.per_device_train_batch_size, shuffle=False, collate_fn=data_collator)
-        test_dl = DataLoader(test_ds, self.training_args.per_device_eval_batch_size, shuffle=False, collate_fn=data_collator)
+        train_dl = DataLoader(train_ds, self.per_device_train_batch_size, shuffle=False, collate_fn=data_collator)
+        test_dl = DataLoader(test_ds, self.per_device_eval_batch_size, shuffle=False, collate_fn=data_collator)
 
         train_dl = accelerator.prepare(train_dl)
         test_dl = accelerator.prepare(test_dl)
@@ -177,12 +174,36 @@ class torch_prep():
     
     def train_(self, md, tk, optimizer, lr_sch, train_dl, test_dl, train_ds, test_ds):
 
+        training_args = SFTConfig(
+                                output_dir="./qwen_results",
+                                # resume_from_checkpoint="./qwen_results/checkpoint-",
+                                # compute loss every few steps 1.5k/step
+                                num_train_epochs=self.num_train_epochs,
+                                per_device_train_batch_size=self.per_device_train_batch_size,
+                                per_device_eval_batch_size=self.per_device_eval_batch_size,
+                                gradient_accumulation_steps=self.gradient_accumulation_steps,
+                                optim=self.optim,
+                                save_steps=self.save_steps,
+                                logging_steps=self.logging_steps,
+                                learning_rate=self.learning_rate,
+                                weight_decay=self.weight_decay,
+                                fp16=self.fp16,
+                                bf16=self.bf16,
+                                max_grad_norm=self.max_grad_norm,
+                                max_steps=self.max_steps,
+                                warmup_ratio=self.warmup_ratio,
+                                group_by_length=self.group_by_length,
+                                lr_scheduler_type=self.lr_scheduler_type,
+                                report_to=self.report_to,
+                                packing=self.packing,
+        )
+
         trainer = self.CustomSFTTrainer(
             model=md,
             processing_class=tk,
             train_dataset=train_ds,
             eval_dataset=test_ds,
-            args=self.training_args,
+            args=training_args,
         )
         trainer.custom_train(optimizer, lr_sch, train_dl)
         trainer.model.save_pretrained(self.new_model)
