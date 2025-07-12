@@ -38,15 +38,15 @@ class torch_prep():
             num_training_steps = len(ds) * NUM_EPOCHES
             self.optimizer=optimizer
             self.lr_scheduler=lr_sch
-            model = self.model
+            # model = self.model
             for epoch in range(NUM_EPOCHES):
-                model.train()
+                self.model.train()
                 logging.info(f"Epoch {epoch + 1} of {NUM_EPOCHES}")
                 process_idx = accelerator.process_index
                 # metrics = {"loss": [], "accuracy": [], "steps": []}
                 locals = {"loss_sum": 0.0, "corrects_sum": 0, "valid_toks": 0, "train_step": 0}
                 for step, batch in enumerate(ds):   
-                    outputs = model(**batch)
+                    outputs = self.model(**batch)
                     loss = outputs.loss
                     accelerator.backward(loss)
                     self.optimizer.step()
