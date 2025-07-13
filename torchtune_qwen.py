@@ -16,7 +16,6 @@ from torch.utils.data import(
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig
 
-accelerator = Accelerator()
 # def record(metrics, locals, accelerator, save_file="metrics.json"):
 #     accelerator.wait_for_everyone()
 #     local_stats = torch.tensor([locals["loss_sum"], locals["corrects_sum"], locals["valid_toks"], locals["train_step"]], device=accelerator.device)
@@ -33,7 +32,7 @@ accelerator = Accelerator()
 
 class torch_prep():
     class CustomSFTTrainer(SFTTrainer):
-        def custom_train(self, optimizer, lr_sch, ds, resume_from_checkpoint=None, trial=None, ignore_keys_for_eval=None, **kwargs):
+        def custom_train(self, optimizer, lr_sch, ds, accelerator, resume_from_checkpoint=None, trial=None, ignore_keys_for_eval=None, **kwargs):
             NUM_EPOCHES=self.args.num_train_epochs
             num_training_steps = len(ds) * NUM_EPOCHES
             print(f"total training steps: {num_training_steps}")
@@ -46,26 +45,27 @@ class torch_prep():
                 process_idx = accelerator.process_index
                 # metrics = {"loss": [], "accuracy": [], "steps": []}
                 locals = {"loss_sum": 0.0, "corrects_sum": 0, "valid_toks": 0, "train_step": 0}
-                for step, batch in enumerate(ds):   
-                    outputs = self.model(**batch)
-                    loss = outputs.loss
-                    accelerator.backward(loss)
-                    self.optimizer.step()
-                    self.lr_scheduler.step()
-                    self.optimizer.zero_grad()
+                for step, batch in enumerate(ds):
+                    with accelerator.accumulate(self.model):
+                        outputs = self.model(**batch)
+                        loss = outputs.loss
+                        accelerator.backward(loss)
+                        self.optimizer.step()
+                        self.lr_scheduler.step()
+                        self.optimizer.zero_grad()
 
-                    predictions = outputs.logits.argmax(dim=-1)
-                    valids_mask = batch["labels"] != -100
-                    corrects = (predictions[valids_mask] == batch["labels"][valids_mask]).sum().item()
-                    locals["corrects_sum"] += corrects
-                    locals["valid_toks"] += valids_mask.sum().item()
-                    locals["loss_sum"] += loss.item()
-                    locals["train_step"] = step + 1
+                        predictions = outputs.logits.argmax(dim=-1)
+                        valids_mask = batch["labels"] != -100
+                        corrects = (predictions[valids_mask] == batch["labels"][valids_mask]).sum().item()
+                        locals["corrects_sum"] += corrects
+                        locals["valid_toks"] += valids_mask.sum().item()
+                        locals["loss_sum"] += loss.item()
+                        locals["train_step"] = step + 1
 
-                    if step % self.args.logging_steps == 0:
-                        logging.info(f"{process_idx}: train step number {step}")
-                        print(f"Step {step}: Loss = {loss.item()}")
-                        print(locals)
+                        if step % self.args.logging_steps == 0:
+                            logging.info(f"{process_idx}: train step number {step}")
+                            print(f"Step {step}: Loss = {loss.item()}")
+                            print(locals)
 
             print("Training is Done")
 
@@ -94,6 +94,7 @@ class torch_prep():
         self.report_to="tensorboard"
         self.packing=False
 
+        self.accelerator = Accelerator(gradient_accumulation_steps=self.gradient_accumulation_steps)
 
     def pre_loading(self):
 
@@ -160,14 +161,13 @@ class torch_prep():
 
         train_ds = ((train.map(apply_chat_template)).map(tokenize_data)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
         test_ds = ((test.map(apply_chat_template)).map(tokenize_data)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
-        train_dl = DataLoader(train_ds, self.per_device_train_batch_size, shuffle=False, collate_fn=data_collator)
-        test_dl = DataLoader(test_ds, self.per_device_eval_batch_size, shuffle=False, collate_fn=data_collator)
-        print(len(train_dl))
-        print(len(train_ds))
-        train_dl = accelerator.prepare(train_dl)
-        test_dl = accelerator.prepare(test_dl)
+        train_dl = DataLoader(train_ds, batch_size=self.per_device_train_batch_size, shuffle=False, collate_fn=data_collator)
+        test_dl = DataLoader(test_ds, batch_size=self.per_device_eval_batch_size, shuffle=False, collate_fn=data_collator)
 
-        model, optimizer, lr_scheduler = accelerator.prepare(
+        train_dl = self.accelerator.prepare(train_dl)
+        test_dl = self.accelerator.prepare(test_dl)
+
+        model, optimizer, lr_scheduler = self.accelerator.prepare(
             md, optimizer, lr_scheduler
         )
 
@@ -206,7 +206,7 @@ class torch_prep():
             eval_dataset=test_ds,
             args=training_args,
         )
-        trainer.custom_train(optimizer, lr_sch, train_dl)
+        trainer.custom_train(optimizer, lr_sch, train_dl, self.accelerator)
         trainer.model.save_pretrained(self.new_model)
         trainer.processing_class.save_pretrained(self.new_model)
         trainer.evaluate()
