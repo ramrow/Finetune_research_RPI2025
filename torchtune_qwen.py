@@ -79,8 +79,8 @@ class torch_prep():
 
         self.output_dir="./qwen_results"
         self.num_train_epochs=1
-        self.per_device_train_batch_size=7
-        self.per_device_eval_batch_size=7
+        self.per_device_train_batch_size=12
+        self.per_device_eval_batch_size=3
         self.gradient_accumulation_steps=8
         self.optim="paged_adamw_32bit"
         self.save_steps=250
@@ -183,7 +183,7 @@ class torch_prep():
                                 # resume_from_checkpoint="./qwen_results/checkpoint-",
                                 # compute loss every few steps 1.5k/step
                                 num_train_epochs=self.num_train_epochs,
-                                per_device_train_batch_size=self.per_device_train_batch_size,
+                                # per_device_train_batch_size=self.per_device_train_batch_size,
                                 per_device_eval_batch_size=self.per_device_eval_batch_size,
                                 gradient_accumulation_steps=self.gradient_accumulation_steps,
                                 optim=self.optim,
