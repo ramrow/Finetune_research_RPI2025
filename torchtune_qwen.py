@@ -79,8 +79,8 @@ class torch_prep():
 
         self.output_dir="./qwen_results"
         self.num_train_epochs=1
-        self.per_device_train_batch_size=8
-        self.per_device_eval_batch_size=8
+        self.per_device_train_batch_size=7
+        self.per_device_eval_batch_size=7
         self.gradient_accumulation_steps=8
         self.optim="paged_adamw_32bit"
         self.save_steps=250
