@@ -65,8 +65,7 @@ class torch_prep():
 
                         if step % self.args.logging_steps == 0:
                             logging.info(f"{process_idx}: train step number {step}")
-                            result = loss.item
-                            sys.stdout.write(f"Step {step}: Loss = {result}\n")
+                            sys.stdout.write(f"Step {step}: Loss = {loss.item()}\n")
                             # print(f"Step {step}: Loss = {loss.item()}")                            # print(locals)
                             sys.stdout.flush()
 
