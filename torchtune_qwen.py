@@ -78,9 +78,9 @@ class torch_prep():
 
         self.output_dir="./qwen_results"
         self.num_train_epochs=1
-        self.per_device_train_batch_size=3
-        self.per_device_eval_batch_size=3
-        self.gradient_accumulation_steps=4
+        self.per_device_train_batch_size=2
+        self.per_device_eval_batch_size=2
+        self.gradient_accumulation_steps=6
         self.optim="paged_adamw_32bit"
         self.save_steps=250
         self.logging_steps=25
@@ -157,7 +157,7 @@ class torch_prep():
             ]
             return tokens
 
-        data_collator = DataCollatorForLanguageModeling(tokenizer=tk, mlm=False)
+        data_collator = DataCollatorForLanguageModeling(tokenizer=tk, mlm=True, mlm_probability=0.15)
         optimizer = torch.optim.AdamW(md.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
         lr_scheduler = get_scheduler("constant", optimizer=optimizer)
 
