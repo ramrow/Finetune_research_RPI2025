@@ -2,6 +2,7 @@ import os
 import sys
 import torch
 import logging
+import time
 from datasets import load_dataset
 from accelerate import Accelerator
 from transformers import (
@@ -226,6 +227,8 @@ class torch_prep():
             locals = {"loss_sum": 0.0, "corrects_sum": 0, "valid_toks": 0, "train_step": 0}
             for step, batch in enumerate(train_dl):
                 with self.accelerator.accumulate(md):
+                    start = time.time()
+
                     outputs = md(**batch)
                     loss = outputs.loss
                     self.accelerator.backward(loss)
@@ -243,7 +246,8 @@ class torch_prep():
 
                     if step % self.logging_steps == 0:
                         logging.info(f"{process_idx}: train step number {step}")
-                    sys.stdout.write(f"Step {step}: Loss = {loss.item()}\n")
+                    
+                    sys.stdout.write(f"Step {step}: Loss = {loss.item()} | Time Elapsed: {time.time() - start}\n")
                     sys.stdout.flush()
 
         print("Training is Done")
