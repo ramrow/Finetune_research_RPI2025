@@ -225,7 +225,7 @@ class torch_prep():
             process_idx = self.accelerator.process_index
             locals = {"loss_sum": 0.0, "corrects_sum": 0, "valid_toks": 0, "train_step": 0}
             for step, batch in enumerate(train_dl):
-                with self.accelerator.accumulate(self.model):
+                with self.accelerator.accumulate(md):
                     outputs = md(**batch)
                     loss = outputs.loss
                     self.accelerator.backward(loss)
