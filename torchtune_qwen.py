@@ -78,8 +78,8 @@ class torch_prep():
 
         self.output_dir="./qwen_results"
         self.num_train_epochs=1
-        self.per_device_train_batch_size=3
-        self.per_device_eval_batch_size=3
+        self.per_device_train_batch_size=5
+        self.per_device_eval_batch_size=5
         self.gradient_accumulation_steps=8
         self.optim="paged_adamw_32bit"
         self.save_steps=250
@@ -163,7 +163,7 @@ class torch_prep():
 
         train_ds = ((train.map(apply_chat_template)).map(tokenize_data)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
         test_ds = ((test.map(apply_chat_template)).map(tokenize_data)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
-        train_dl = DataLoader(train_ds, batch_size=self.per_device_train_batch_size * 4, shuffle=False, collate_fn=data_collator)
+        train_dl = DataLoader(train_ds, batch_size=self.per_device_train_batch_size, shuffle=False, collate_fn=data_collator)
         test_dl = DataLoader(test_ds, batch_size=self.per_device_eval_batch_size, shuffle=False, collate_fn=data_collator)
 
         train_dl = self.accelerator.prepare(train_dl)
