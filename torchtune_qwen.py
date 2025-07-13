@@ -84,7 +84,7 @@ class torch_prep():
         self.optim="paged_adamw_32bit"
         self.save_steps=250
         self.logging_steps=25
-        self.learning_rate=3e-4
+        self.learning_rate=5e-4
         self.weight_decay=0.01
         self.fp16=False
         self.bf16=True
@@ -157,7 +157,7 @@ class torch_prep():
             ]
             return tokens
 
-        data_collator = DataCollatorForLanguageModeling(tokenizer=tk, mlm=True, mlm_probability=0.15)
+        data_collator = DataCollatorForLanguageModeling(tokenizer=tk, mlm=False,)
         optimizer = torch.optim.AdamW(md.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
         lr_scheduler = get_scheduler("constant", optimizer=optimizer)
 
