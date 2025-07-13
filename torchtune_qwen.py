@@ -78,9 +78,9 @@ class torch_prep():
 
         self.output_dir="./qwen_results"
         self.num_train_epochs=1
-        self.per_device_train_batch_size=8
-        self.per_device_eval_batch_size=8
-        self.gradient_accumulation_steps=8
+        self.per_device_train_batch_size=2
+        self.per_device_eval_batch_size=2
+        self.gradient_accumulation_steps=4
         self.optim="paged_adamw_32bit"
         self.save_steps=250
         self.logging_steps=25
@@ -243,8 +243,8 @@ class torch_prep():
 
                     if step % self.logging_steps == 0:
                         logging.info(f"{process_idx}: train step number {step}")
-                        sys.stdout.write(f"Step {step}: Loss = {loss.item()}\n")
-                        sys.stdout.flush()
+                    sys.stdout.write(f"Step {step}: Loss = {loss.item()}\n")
+                    sys.stdout.flush()
 
         print("Training is Done")
         return md
