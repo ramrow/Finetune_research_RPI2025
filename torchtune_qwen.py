@@ -163,8 +163,8 @@ class torch_prep():
 
         train_ds = ((train.map(apply_chat_template)).map(tokenize_data)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
         test_ds = ((test.map(apply_chat_template)).map(tokenize_data)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
-        train_dl = DataLoader(train_ds, batch_size=self.per_device_train_batch_size, shuffle=False, collate_fn=data_collator)
-        test_dl = DataLoader(test_ds, batch_size=self.per_device_eval_batch_size, shuffle=False, collate_fn=data_collator)
+        train_dl = DataLoader(train_ds, batch_size=self.per_device_train_batch_size, shuffle=False, collate_fn=data_collator, num_workers=3)
+        test_dl = DataLoader(test_ds, batch_size=self.per_device_eval_batch_size, shuffle=False, collate_fn=data_collator, num_workers=3)
 
         train_dl = self.accelerator.prepare(train_dl)
         test_dl = self.accelerator.prepare(test_dl)
