@@ -1,4 +1,5 @@
 import os
+import sys
 import torch
 import logging
 from datasets import load_dataset
@@ -64,8 +65,9 @@ class torch_prep():
 
                         if step % self.args.logging_steps == 0:
                             logging.info(f"{process_idx}: train step number {step}")
-                            print(f"Step {step}: Loss = {loss.item()}")
-                            print(locals)
+                            sys.stdout.write(f"Step {step}: Loss = {loss.item}\n")
+                            # print(f"Step {step}: Loss = {loss.item()}")                            # print(locals)
+                            sys.stdout.flush()
 
             print("Training is Done")
 
@@ -76,7 +78,7 @@ class torch_prep():
 
         self.output_dir="./qwen_results"
         self.num_train_epochs=1
-        self.per_device_train_batch_size=3
+        self.per_device_train_batch_size=12
         self.per_device_eval_batch_size=3
         self.gradient_accumulation_steps=8
         self.optim="paged_adamw_32bit"
