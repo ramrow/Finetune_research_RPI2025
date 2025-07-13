@@ -213,10 +213,52 @@ class torch_prep():
         trainer.processing_class.save_pretrained(self.new_model)
         trainer.evaluate()
 
+
+
+    def epoches_(self, md, optimizer, lr_sch, train_dl):
+        NUM_EPOCHES=self.num_train_epochs
+        num_training_steps = len(train_dl) * NUM_EPOCHES
+        print(f"total training steps: {num_training_steps}")
+        for epoch in range(NUM_EPOCHES):
+            md.train()
+            logging.info(f"Epoch {epoch + 1} of {NUM_EPOCHES}")
+            process_idx = self.accelerator.process_index
+            locals = {"loss_sum": 0.0, "corrects_sum": 0, "valid_toks": 0, "train_step": 0}
+            for step, batch in enumerate(train_dl):
+                with self.accelerator.accumulate(self.model):
+                    outputs = md(**batch)
+                    loss = outputs.loss
+                    self.accelerator.backward(loss)
+                    optimizer.zero_grad()
+                    optimizer.step()
+                    lr_sch.step()
+
+                    predictions = outputs.logits.argmax(dim=-1)
+                    valids_mask = batch["labels"] != -100
+                    corrects = (predictions[valids_mask] == batch["labels"][valids_mask]).sum().item()
+                    locals["corrects_sum"] += corrects
+                    locals["valid_toks"] += valids_mask.sum().item()
+                    locals["loss_sum"] += loss.item()
+                    locals["train_step"] = step + 1
+
+                    if step % self.logging_steps == 0:
+                        logging.info(f"{process_idx}: train step number {step}")
+                        sys.stdout.write(f"Step {step}: Loss = {loss.item()}\n")
+                        sys.stdout.flush()
+
+        print("Training is Done")
+        return md
+
     def process_(self):
         md, tk, train, test = self.pre_loading()
         md_, tk_, opt, sch, trl, tsl, trd, tsd = self.prep_(md, tk, train, test)
-        self.train_(md_, tk_, opt, sch, trl, tsl, trd, tsd)
+
+        model = self.epoches_(md_,opt,sch,trl)
+        model.save_pretrained(self.new_model)
+        tk_.save_pretrained(self.new_model)
+
+        ####################################################
+        # self.train_(md_, tk_, opt, sch, trl, tsl, trd, tsd)
 
 if __name__ == "__main__":
     tt = torch_prep()
