@@ -229,9 +229,9 @@ class torch_prep():
                     outputs = md(**batch)
                     loss = outputs.loss
                     self.accelerator.backward(loss)
-                    optimizer.zero_grad()
                     optimizer.step()
                     lr_sch.step()
+                    optimizer.zero_grad()
 
                     predictions = outputs.logits.argmax(dim=-1)
                     valids_mask = batch["labels"] != -100
