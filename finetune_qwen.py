@@ -40,7 +40,7 @@ def tokenize_data(example):
 
 
 ds = (load_dataset("finalform/split_foam",))
-model="Qwen/Qwen-7B"
+model="Qwen/Qwen2.5-VL-7B-Instruct"
 new_model = "qwen-foam"
 
 md = AutoModelForCausalLM.from_pretrained(
@@ -55,15 +55,16 @@ md.config.pretraining_tp = 1
 
 tokenizer = AutoTokenizer.from_pretrained(model, trust_remote_code=True)
 tokenizer.return_tensors = "pt"
+print(tokenizer.pad_token, tokenizer.eos_token)
 tokenizer.pad_token = '<|endoftext|>'
 tokenizer.eos_token = '<|endoftext|>'
 tokenizer.padding_side = "right"
 
 #######################
-tokenizer.chat_template =   "{% for message in messages %}{% if loop.first and message['role'] != 'system' %}" \
-                            "{{ '<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n' }}{% endif %}{{ " \
-                            "'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>\n' }}{% if " \
-                            "loop.last and add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}{% endfor %}"
+# tokenizer.chat_template =   "{% for message in messages %}{% if loop.first and message['role'] != 'system' %}" \
+#                             "{{ '<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n' }}{% endif %}{{ " \
+#                             "'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>\n' }}{% if " \
+#                             "loop.last and add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}{% endfor %}"
 #######################
 
 train_ds = ds['train'].map(apply_chat_template)
