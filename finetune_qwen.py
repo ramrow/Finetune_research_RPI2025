@@ -56,6 +56,7 @@ md.config.pretraining_tp = 1
 tokenizer = AutoTokenizer.from_pretrained(model, trust_remote_code=True)
 tokenizer.return_tensors = "pt"
 tokenizer.pad_token = '<|endoftext|>'
+tokenizer.eos_token = '<|endoftext|>'
 tokenizer.padding_side = "right"
 
 #######################
