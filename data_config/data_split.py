@@ -7,7 +7,7 @@ df = pd.read_csv('formatted_dataset.csv')
 shuffled_df = df.sample(frac=1)
 shuffled_df.to_csv('shuffled_foam.csv', index=False)
 
-percent = 0.05
+percent = 0.3
 pivot = int(len(shuffled_df) * percent)
 test, train = (shuffled_df[:pivot], shuffled_df[pivot:])
 test.to_csv("test.csv", index=False)
