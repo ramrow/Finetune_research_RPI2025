@@ -65,9 +65,10 @@ md.config.pretraining_tp = 1
 
 tokenizer = AutoTokenizer.from_pretrained(model, trust_remote_code=True)
 tokenizer.return_tensors = "pt"
-print(tokenizer.pad_token, tokenizer.eos_token)
-tokenizer.pad_token = '<|endoftext|>'
-tokenizer.eos_token = '<|endoftext|>'
+tokenizer.pad_token = tokenizer.eos_token
+# print(tokenizer.pad_token, tokenizer.eos_token)
+# tokenizer.pad_token = '<|endoftext|>'
+# tokenizer.eos_token = '<|endoftext|>'
 tokenizer.padding_side = "right"
 
 #######################
