@@ -6,6 +6,7 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     BitsAndBytesConfig,
+    AutoModelForVision2Seq ,
 )
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig
@@ -43,13 +44,22 @@ ds = (load_dataset("finalform/split_foam",))
 model="Qwen/Qwen2.5-VL-7B-Instruct"
 new_model = "qwen-foam"
 
-md = AutoModelForCausalLM.from_pretrained(
+# md = AutoModelForCausalLM.from_pretrained(
+#     model,
+#     quantization_config=quant_config,
+#     device_map="auto",
+#     trust_remote_code=True,
+#     torch_dtype=torch.bfloat16,
+# )
+
+md = AutoModelForVision2Seq.from_pretrained(
     model,
     quantization_config=quant_config,
     device_map="auto",
     trust_remote_code=True,
     torch_dtype=torch.bfloat16,
 )
+
 md.config.use_cache = False
 md.config.pretraining_tp = 1
 
