@@ -58,7 +58,6 @@ class unsloth_qwen():
             train_dataset=self.trd,
             eval_dataset=self.tsd,
             args=training_args,
-            processing_class=self.tk,
             tokenizer=self.tk,
         )
         # trainer.train()
