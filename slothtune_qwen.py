@@ -65,8 +65,10 @@ class unsloth_qwen():
         trainer.evaluate()
 
     def format_data(self):
-        self.trd = (self.ds['train'].map(self.format_data_helper)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
-        self.tsd = (self.ds['test'].map(self.format_data_helper)).remove_columns(["text", "system_prompt", "usr_prompt", "folder_name", "file_name", "case_path", "description", "code_content"])
+        self.trd = (self.ds['train'].map(self.format_data_helper)).remove_columns(["system_prompt", "usr_prompt", "folder_name",
+                                                                                "file_name", "case_path", "description", "code_content"])
+        self.tsd = (self.ds['test'].map(self.format_data_helper)).remove_columns(["system_prompt", "usr_prompt", 
+                                                                                "folder_name", "file_name", "case_path", "description", "code_content"])
         print(self.trd)
         print(self.tsd)
 
