@@ -58,7 +58,7 @@ class unsloth_qwen():
             train_dataset=self.trd,
             eval_dataset=self.tsd,
             args=training_args,
-            tokenizer=self.tk,
+            processing_class=self.tk,
         )
         # trainer.train()
         trainer.train(resume_from_checkpoint=True)
