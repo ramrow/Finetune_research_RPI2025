@@ -1,7 +1,6 @@
 import os
 import torch
 from datasets import load_dataset
-from accelerate import Accelerator
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
