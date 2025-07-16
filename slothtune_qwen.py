@@ -33,6 +33,7 @@ class unsloth_qwen():
     def finetune(self):
         training_args = SFTConfig(
             output_dir="./qwen_results",
+            resume_from_checkpoint="./qwen_results/checkpoint-",
             num_train_epochs=1,
             per_device_train_batch_size=2,
             per_device_eval_batch_size=2,
@@ -59,7 +60,8 @@ class unsloth_qwen():
             args=training_args,
             processing_class=self.tk,
         )
-        trainer.train()
+        # trainer.train()
+        trainer.train(resume_from_checkpoint=True)
         trainer.model.save_pretrained("foamqwen")
         trainer.processing_class.save_pretrained("foamqwen")
         trainer.evaluate()
