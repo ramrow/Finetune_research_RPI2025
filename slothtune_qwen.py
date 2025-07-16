@@ -10,6 +10,7 @@ class unsloth_qwen():
                                 max_seq_length= 1028,
                                 load_in_4bit=True,
                             )
+        print(self.md)
         self.md =  FastLanguageModel.get_peft_model(
                                 model= self.md,
                                 r= 32,
@@ -18,6 +19,9 @@ class unsloth_qwen():
                                 lora_dropout= 0.1,
                                 lora_alpha=32, #could be 16
                             )
+        self.tk.return_tensors = "pt"
+        self.tk.pad_token = self.tk.eos_token
+        self.tk.padding_side = "right"
         self.ds = load_dataset("finalform/split_foam",)
         self.trd = None
         self.tsd = None
