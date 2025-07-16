@@ -1,11 +1,11 @@
+from unsloth import FastLanguageModel
 from trl import SFTTrainer, SFTConfig
 from datasets import load_dataset
-from unsloth import FastLanguageModel
-import torch
+
 
 class unsloth_qwen():
     def __init__(self):
-        self.md, self.tk =  FastLanguageModel(
+        self.md, self.tk =  FastLanguageModel.from_pretrained(
                                 model_name= "unsloth/Qwen3-8B-unsloth-bnb-4bit",
                                 max_seq_length= 1028,
                                 load_in_4bit=True,
