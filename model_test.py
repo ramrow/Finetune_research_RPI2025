@@ -31,6 +31,7 @@ text = tk.apply_chat_template(
 model_inputs = tk([text], return_tensors="pt").to(md.device)
 generated_ids = md.generate(
     **model_inputs,
+    max_new_tokens=1028
 )
 generated_ids = [
     output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
