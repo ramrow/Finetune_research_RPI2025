@@ -1,10 +1,10 @@
-from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
+from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer, AutoModelForVision2Seq
 import torch
 import os
 
 model_name_or_path = "finalform/foamqwen-7B"
 
-md = AutoModelForCausalLM.from_pretrained(
+md = AutoModelForVision2Seq.from_pretrained(
     model_name_or_path,
     torch_dtype=torch.float16,
     device_map="auto",
