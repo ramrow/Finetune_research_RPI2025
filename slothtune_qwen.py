@@ -69,8 +69,8 @@ class unsloth_qwen():
                                                                                 "file_name", "case_path", "description", "code_content"])
         self.tsd = (self.ds['test'].map(self.format_data_helper)).remove_columns(["system_prompt", "usr_prompt", 
                                                                                 "folder_name", "file_name", "case_path", "description", "code_content"])
-        print(self.trd)
-        print(self.tsd)
+        # print(self.trd)
+        # print(self.tsd)
 
     def format_data_helper(self, example):
         messages = [
