@@ -1,32 +1,5 @@
-# model_name_or_path: finalform/factoryqwen-8B
-
-# stage: sft
-# do_predict: true
-# finetuning_type: lora
-# lora_target: all
-# lora_rank: 32
-# lora_alpha: 16
-# lora_dropout: 0.1
-
-# dataset: test
-# task: mmlu_test
-# template: qwen3
-# cutoff_len: 1028
-# max_samples: 1000
-# overwrite_cache: true
-# preprocessing_num_workers: 16
-# dataloader_num_workers: 4
-
-# output_dir: factory_qwen_results
-# overwrite_output_dir: true
-# report_to: tensorboard
-
-# val_size: 1.0
-# per_device_eval_batch_size: 2
-# predict_with_generate: true
-# ddp_timeout: 180000000
-
 model_name_or_path: finalform/factoryqwen-8B
+adapter_name_or_path: factory_qwen_results/adapter_config.json
 
 ### method
 stage: sft
@@ -36,7 +9,7 @@ finetuning_type: lora
 ### dataset
 eval_dataset: test
 template: qwen3
-cutoff_len: 2048
+cutoff_len: 1028
 max_samples: 50
 overwrite_cache: true
 preprocessing_num_workers: 16
