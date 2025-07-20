@@ -1,15 +1,24 @@
-from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer, AutoModelForVision2Seq
+from transformers import (
+    pipeline, 
+    AutoModelForCausalLM, 
+    AutoTokenizer,
+    AutoProcessor,
+    AutoModelForVision2Seq, 
+    Qwen2_5_VLForConditionalGeneration
+)
 import torch
 import os
 
 model_name_or_path = "finalform/factoryqwen-7B"
 
-md = AutoModelForVision2Seq.from_pretrained(
+md = Qwen2_5_VLForConditionalGeneration.from_pretrained(
     model_name_or_path,
-    torch_dtype=torch.float64,
+    torch_dtype=torch.float16,
     device_map="auto",
     trust_remote_code=True
 )
+
+processor = AutoProcessor.from_pretrained(model_name_or_path)
 tk = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)
 
 prompt = "You are an expert in OpenFOAM simulation and numerical modeling. Your task is to generate a complete and functional file named: <file_name>p</file_name> within the <folder_name>0</folder_name> directory. Ensure all required values are present and match with the files content already generated. Before finalizing the output, ensure: All necessary fields exist (e.g., if `nu` is defined in `constant/transportProperties`, it must be used correctly in `0/U`). Cross-check field names between different files to avoid mismatches. Ensure units and dimensions are correct for all physical variables. Ensure case solver settings are consistent with the user's requirements. Available solvers are: ['mhdFoam', 'rhoPorousSimpleFoam', 'foamyQuadMesh', 'laplacianFoam', 'rhoSimpleFoam', 'potentialFreeSurfaceFoam', 'simpleFoam', 'icoFoam', 'SRFPimpleFoam', 'compressibleInterFoam', 'XiFoam', 'financialFoam', 'interMixingFoam', 'rhoCentralFoam', 'pisoFoam', 'interFoam', 'foamyHexMesh', 'driftFluxFoam', 'multiphaseInterFoam', 'boundaryFoam', 'potentialFoam', 'compressibleMultiphaseInterFoam', 'moveDynamicMesh', 'cavitatingFoam', 'adjointShapeOptimisationFoam', 'electrostaticFoam', 'dsmcFoam', 'shallowWaterFoam', 'refineMesh', 'chtMultiRegionFoam', 'snappyHexMesh', 'porousSimpleFoam', 'multiphaseEulerFoam', 'chemFoam', 'SRFSimpleFoam', 'rhoPimpleFoam', 'reactingFoam', 'particleFoam', 'blockMesh', 'PDRFoam', 'buoyantReactingFoam', 'buoyantFoam', 'mdEquilibrationFoam', 'mdFoam', 'dnsFoam', 'solidDisplacementFoam', 'solidEquilibriumDisplacementFoam', 'pimpleFoam', 'twoLiquidMixingFoam', 'denseParticleFoam', 'scalarTransportFoam']. Provide only the code—no explanations, comments, or additional text."
@@ -21,13 +30,13 @@ messages = [
     {"role": "user", "content": text}
 ]
 
-text = tk.apply_chat_template(
+text = processor.apply_chat_template(
     messages,
     tokenize=False,
     add_generation_prompt=True
 )
 
-model_inputs = tk([text], return_tensors="pt").to(md.device)
+model_inputs = processor([text], return_tensors="pt").to(md.device)
 generated_ids = md.generate(
     **model_inputs,
     max_new_tokens=1028
