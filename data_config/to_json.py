@@ -8,8 +8,8 @@ import json
 # # DataFrame to JSON
 # df.to_json('data/train.json', orient='records', lines=True)
 
-with open('data/train.csv', mode='r', newline='', encoding='utf-8') as csvfile:
+with open('data/test.csv', mode='r', newline='', encoding='utf-8') as csvfile:
     data = list(csv.DictReader(csvfile))
 
-with open('data/train.json', mode='w', encoding='utf-8') as jsonfile:
+with open('data/test.json', mode='w', encoding='utf-8') as jsonfile:
     json.dump(data, jsonfile, indent=4)
