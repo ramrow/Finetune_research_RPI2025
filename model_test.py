@@ -2,7 +2,7 @@ from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer, AutoMode
 import torch
 import os
 
-model_name_or_path = "finalform/foamqwen-7B"
+model_name_or_path = "finalform/factoryqwen-7B"
 
 md = AutoModelForVision2Seq.from_pretrained(
     model_name_or_path,
