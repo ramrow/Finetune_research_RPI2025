@@ -9,9 +9,9 @@ from transformers import (
 import torch
 import os
 
-model_name_or_path = "finalform/factoryqwen-7B"
+model_name_or_path = "finalform/factoryqwen-8B"
 
-md = AutoModelForVision2Seq.from_pretrained(
+md = AutoModelForCausalLM.from_pretrained(
     model_name_or_path,
     torch_dtype=torch.float16,
     device_map="auto",
