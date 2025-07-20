@@ -1,7 +1,7 @@
 model_name_or_path: finalform/factoryqwen-8B
 
 stage: sft
-do_train: true
+do_predict: true
 finetuning_type: lora
 lora_target: all
 lora_rank: 32
@@ -17,14 +17,10 @@ preprocessing_num_workers: 16
 dataloader_num_workers: 4
 
 output_dir: factory_qwen_results
-logging_steps: 10
-save_steps: 500
-plot_loss: true
 overwrite_output_dir: true
-save_only_model: false
 report_to: tensorboard
 
 val_size: 1.0
 per_device_eval_batch_size: 2
-eval_strategy: steps
-eval_steps: 500
+predict_with_generate: true
+ddp_timeout: 180000000
