@@ -30,13 +30,13 @@ messages = [
     {"role": "user", "content": text}
 ]
 
-text = processor.apply_chat_template(
+text = tk.apply_chat_template(
     messages,
     tokenize=False,
     add_generation_prompt=True
 )
 
-model_inputs = processor([text], return_tensors="pt").to(md.device)
+model_inputs = tk([text], return_tensors="pt").to(md.device)
 generated_ids = md.generate(
     **model_inputs,
     max_new_tokens=1028
