@@ -15,7 +15,7 @@ max_samples: 1000
 overwrite_cache: true
 preprocessing_num_workers: 16
 
-save_dir: factory_qwen_results
+save_dir: factory_qwen_eval
 
 val_size: 1.0
 per_device_eval_batch_size: 2
