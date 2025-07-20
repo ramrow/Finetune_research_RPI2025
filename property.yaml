@@ -9,6 +9,7 @@ lora_alpha: 16
 lora_dropout: 0.1
 
 dataset: test
+task: mmlu_test
 template: qwen3
 cutoff_len: 1028
 max_samples: 1000
