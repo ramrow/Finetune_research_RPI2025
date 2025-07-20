@@ -6,7 +6,7 @@ model_name_or_path = "finalform/factoryqwen-7B"
 
 md = AutoModelForVision2Seq.from_pretrained(
     model_name_or_path,
-    torch_dtype=torch.float16,
+    torch_dtype=torch.float32,
     device_map="auto",
     trust_remote_code=True
 )
