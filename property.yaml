@@ -18,4 +18,4 @@ preprocessing_num_workers: 16
 save_dir: factory_qwen_eval
 
 val_size: 1.0
-per_device_eval_batch_size: 2
+batch_size: 2
