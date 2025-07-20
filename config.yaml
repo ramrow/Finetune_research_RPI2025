@@ -1,5 +1,5 @@
 ### model
-model_name_or_path: Qwen/Qwen3-8B-hf
+model_name_or_path: Qwen/Qwen3-8B
 
 ### method
 stage: sft
