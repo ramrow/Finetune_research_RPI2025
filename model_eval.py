@@ -19,18 +19,18 @@ quant_config = BitsAndBytesConfig(
     bnb_4bit_use_double_quant=True,
 )
 
-def format_data_helper(self, example):
+def format_data_helper(example):
         messages = [
             {"role": "system", "content": example["system_prompt"]},
             {"role": "user", "content": example['usr_prompt']},
             {"role": "assistant", "content": example["code_content"]}
         ]
-        prompt = self.tk.apply_chat_template(
+        prompt = tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
-        tokens = self.tk(prompt, padding="max_length", max_length=1028, truncation=True)
+        tokens = tokenizer(prompt, padding="max_length", max_length=1028, truncation=True)
         tokens['labels'] = [
-            -100 if token == self.tk.pad_token_id else token for token in tokens['input_ids']
+            -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
         ]
         return tokens
 
