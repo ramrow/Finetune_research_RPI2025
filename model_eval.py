@@ -58,15 +58,6 @@ tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 tsd = ds['test'].map(format_data_helper).remove_columns(["system_prompt", "usr_prompt", 
                                                                                 "folder_name", "file_name", "case_path", "description", "code_content"])
-peft_params = LoraConfig(
-    lora_alpha=16,
-    lora_dropout=0.1,
-    r=32, #change rank
-    bias="none",
-    task_type="CAUSAL_LM",
-    target_modules="all-linear"
-)
-
 training_args = SFTConfig(
     output_dir="./qwen_results",
     # resume_from_checkpoint="./qwen_results/checkpoint-",
@@ -91,10 +82,9 @@ training_args = SFTConfig(
     packing=False,
 )
 
-peft_md = get_peft_model(md, peft_params)
 
 trainer = SFTTrainer(
-    model=peft_md,
+    model=md,
     eval_dataset=tsd,
     args=training_args,
     processing_class=tokenizer,
