@@ -56,6 +56,8 @@ tokenizer.pad_token = tokenizer.eos_token
 # tokenizer.pad_token = '<|endoftext|>'
 # tokenizer.eos_token = '<|endoftext|>'
 tokenizer.padding_side = "right"
+trd = ds['train'].map(format_data_helper).remove_columns(["system_prompt", "usr_prompt", 
+                                                                                "folder_name", "file_name", "case_path", "description", "code_content"])
 tsd = ds['test'].map(format_data_helper).remove_columns(["system_prompt", "usr_prompt", 
                                                                                 "folder_name", "file_name", "case_path", "description", "code_content"])
 training_args = SFTConfig(
@@ -86,7 +88,7 @@ training_args = SFTConfig(
 trainer = SFTTrainer(
     model=md,
     eval_dataset=tsd,
-    train_dataset=ds['train'],
+    train_dataset=trd,
     args=training_args,
     processing_class=tokenizer,
 )
