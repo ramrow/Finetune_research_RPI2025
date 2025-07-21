@@ -86,6 +86,7 @@ training_args = SFTConfig(
 trainer = SFTTrainer(
     model=md,
     eval_dataset=tsd,
+    train_dataset=ds['train'],
     args=training_args,
     processing_class=tokenizer,
 )
