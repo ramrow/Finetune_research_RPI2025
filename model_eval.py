@@ -38,7 +38,7 @@ def format_data_helper(self, example):
 ds = (load_dataset("finalform/split_foam",))
 model="finalform/factoryqwen-8B"
 
-md = AutoModelForVision2Seq.from_pretrained(
+md = AutoModelForCausalLM.from_pretrained(
     model,
     quantization_config=quant_config,
     device_map="auto",
