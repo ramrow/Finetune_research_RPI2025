@@ -39,3 +39,9 @@ ddp_timeout: 1800
 ddp_backend: nccl
 bf16: true
 resume_from_checkpoint: null
+
+### evaluate
+eval_dataset: test
+per_device_eval_batch_size: 2
+eval_strategy: steps
+eval_steps: 100
