@@ -43,7 +43,7 @@ model_inputs = tk([text], return_tensors="pt").to(md.device)
 # )
 generated_ids = md.generate(
     **model_inputs,
-    # max_new_tokens=500,
+    max_new_tokens=1028,
 )
 output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
 
