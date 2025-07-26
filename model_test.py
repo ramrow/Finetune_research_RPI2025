@@ -9,7 +9,7 @@ from transformers import (
 import torch
 import os
 
-model_name_or_path = "finalform/factoryqwen-8B"
+model_name_or_path = "finalform/testfoam"
 
 md = AutoModelForCausalLM.from_pretrained(
     model_name_or_path,
