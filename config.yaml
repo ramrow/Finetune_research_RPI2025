@@ -6,7 +6,7 @@ stage: sft
 do_train: true
 finetuning_type: lora
 lora_target: all
-lora_rank: 32
+lora_rank: 64 #32
 lora_alpha: 16
 lora_dropout: 0.1
 
@@ -31,10 +31,10 @@ report_to: tensorboard
 ### train
 per_device_train_batch_size: 2
 gradient_accumulation_steps: 4
-learning_rate: 3.0e-4
-num_train_epochs: 6.0
-lr_scheduler_type: constant #constant
-warmup_ratio: 0.03
+learning_rate: 1.0e-4 #3.0e-4
+num_train_epochs: 5.0
+lr_scheduler_type: cosine #constant
+warmup_ratio: 0.01 #0.03
 ddp_timeout: 1800
 ddp_backend: nccl
 bf16: true
