@@ -1,10 +1,6 @@
 ### model
 model_name_or_path: Qwen/Qwen2.5-Coder-7B
 
-# stage: sft
-# do_eval: true
-# finetuning_type: lora
-
 ### dataset
 eval_dataset: test
 template: qwen
