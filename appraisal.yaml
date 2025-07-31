@@ -13,8 +13,8 @@ max_samples: 1000
 preprocessing_num_workers: 16
 
 ### output
-save_dir: factory_qwen_results
+output_dir: factory_qwen_results
 
 ### eval
-batch_size: 2
+per_device_eval_batch_size: 2
 predict_with_generate: true
