@@ -1,9 +1,9 @@
 ### model
 model_name_or_path: Qwen/Qwen3-8B
 
-stage: sft
-do_eval: true
-finetuning_type: lora
+# stage: sft
+# do_eval: true
+# finetuning_type: lora
 
 ### dataset
 eval_dataset: test
@@ -11,10 +11,10 @@ template: qwen3
 cutoff_len: 1028
 max_samples: 1000
 preprocessing_num_workers: 16
+dataloader_num_workers: 4
 
 ### output
 output_dir: factory_qwen_results
 
 ### eval
 per_device_eval_batch_size: 2
-predict_with_generate: true
