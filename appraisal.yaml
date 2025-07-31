@@ -3,10 +3,11 @@ model_name_or_path: Qwen/Qwen3-8B
 
 stage: sft
 do_predict: true
+compute_accuracy: true
 finetuning_type: lora
 
 ### dataset
-dataset: test 
+eval_dataset: test
 template: qwen3
 cutoff_len: 1028
 max_samples: 1000
