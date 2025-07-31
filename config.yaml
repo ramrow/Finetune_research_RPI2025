@@ -13,7 +13,7 @@ lora_dropout: 0.1
 
 ### dataset
 dataset: train
-# template: qwen3
+template: gpt2
 cutoff_len: 1028
 max_samples: 1000
 overwrite_cache: true
