@@ -1,0 +1,15 @@
+### model
+model_name_or_path: Qwen/Qwen3-8B
+
+### dataset
+dataset: test 
+template: qwen3
+task: mmlu_test 
+lang: en
+
+### output
+save_dir: factory_qwen_results
+report_to: tensorboard
+
+### eval
+batch_size: 2
