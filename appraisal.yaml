@@ -9,7 +9,6 @@ lang: en
 
 ### output
 save_dir: factory_qwen_results
-report_to: tensorboard
 
 ### eval
 batch_size: 2
