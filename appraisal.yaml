@@ -1,14 +1,20 @@
 ### model
 model_name_or_path: Qwen/Qwen3-8B
 
+stage: sft
+do_predict: true
+finetuning_type: lora
+
 ### dataset
 dataset: test 
 template: qwen3
-task: mmlu_test 
-lang: en
+cutoff_len: 1028
+max_samples: 1000
+preprocessing_num_workers: 16
 
 ### output
 save_dir: factory_qwen_results
 
 ### eval
 batch_size: 2
+predict_with_generate: true
