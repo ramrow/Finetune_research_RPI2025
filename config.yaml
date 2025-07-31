@@ -10,7 +10,6 @@ lora_target: all
 lora_rank: 32 #32
 lora_alpha: 16
 lora_dropout: 0.1
-task_type: CAUSAL_LM
 
 ### dataset
 dataset: train
