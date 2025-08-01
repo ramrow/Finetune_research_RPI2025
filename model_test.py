@@ -57,8 +57,7 @@ except ValueError:
 thinking_content = tk.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
 content = tk.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
 
-print("thinking content:", thinking_content)
-print("content:", content)
+print(content)
 # generated_ids = [
 #     output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
 # ]
