@@ -1,5 +1,5 @@
 ### model
-model_name_or_path: microsoft/Phi-3.5-mini-instruct
+model_name_or_path: ibm-granite/granite-4.0-tiny-preview
 trust_remote_code: true
 
 ### method
@@ -14,7 +14,7 @@ lora_dropout: 0.1
 
 ### dataset
 dataset: train
-template: phi
+template: granite4
 cutoff_len: 1028
 max_samples: 1000
 overwrite_cache: true
@@ -22,7 +22,7 @@ preprocessing_num_workers: 16
 dataloader_num_workers: 4
 
 # output
-output_dir: factory_phi_results
+output_dir: factory_granite_results
 logging_steps: 10
 save_steps: 500
 plot_loss: true

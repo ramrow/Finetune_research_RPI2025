@@ -47,9 +47,7 @@ generated_ids = md.generate(
 )
 output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
 
-# parsing thinking content
 try:
-    # rindex finding 151668 (</think>)
     index = len(output_ids) - output_ids[::-1].index(151668)
 except ValueError:
     index = 0
