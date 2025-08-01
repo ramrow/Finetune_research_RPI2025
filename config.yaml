@@ -1,5 +1,5 @@
 ### model
-model_name_or_path: microsoft/Phi-3-small-8k-instruct
+model_name_or_path: microsoft/Phi-3.5-mini-instruct
 trust_remote_code: true
 
 ### method
@@ -14,7 +14,7 @@ lora_dropout: 0.1
 
 ### dataset
 dataset: train
-template: phi_small
+template: phi
 cutoff_len: 1028
 max_samples: 1000
 overwrite_cache: true
