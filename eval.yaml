@@ -1,16 +1,16 @@
 ### model
-model_name_or_path: ibm-granite/granite-3.3-8b-instruct
+model_name_or_path: internlm/internlm2_5-7b-chat
 
 ### dataset
 eval_dataset: test
-template: granite3
+template: intern2
 cutoff_len: 1028
 max_samples: 1000
 preprocessing_num_workers: 16
 dataloader_num_workers: 4
 
 ### output
-output_dir: factory_granite_results
+output_dir: factory_intern_results
 
 ### eval
 per_device_eval_batch_size: 2
