@@ -14,4 +14,5 @@ output_dir: factory_qwen_results
 
 ### eval
 per_device_eval_batch_size: 2
+compute_accuracy: true
 do_eval: True
