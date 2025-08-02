@@ -41,23 +41,24 @@ generated_ids = md.generate(
     **model_inputs,
     max_new_tokens=1028,
 )
-print(generated_ids)
-response = tk.batch_decode(generated_ids, skip_special_tokens=True)[0]
+
+generated_ids = [
+        output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+    ]
+response = tk.batch_decode(generated_ids, skip_special_tokens=True)[0].strip()
 print(response)
-output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
-try:
-    index = len(output_ids) - output_ids[::-1].index(151668)
-except ValueError:
-    index = 0
+#################################################################################
 
-thinking_content = tk.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
-content = tk.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
+# output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
+# try:
+#     index = len(output_ids) - output_ids[::-1].index(151668)
+# except ValueError:
+#     index = 0
 
-print(content)
+# thinking_content = tk.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
+# content = tk.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
 
-# pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map={"":0})
-# output = pipe(messages, max_new_tokens=512)
-# print(output[0]['generated_text'][2]['content'])
+# print(content)
 
 #################################################################################
 
