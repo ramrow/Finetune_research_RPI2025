@@ -38,7 +38,7 @@ messages = [
 ]
 outputs = pipe(
     messages,
-    max_new_tokens=2056,
+    max_new_tokens=1200,
 )
 print(outputs[0]["generated_text"][-1]['content'])
 
