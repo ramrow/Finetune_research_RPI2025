@@ -9,53 +9,68 @@ from transformers import (
 import torch
 import os
 
-model_name_or_path = "finalform/foamgranite3.3-Instruct"
+def model_output(model_name_or_path, prompt, text):
 
-md = AutoModelForCausalLM.from_pretrained(
-    model_name_or_path,
-    torch_dtype="auto",
-    device_map="auto",
-    trust_remote_code=True
-)
+    md = AutoModelForCausalLM.from_pretrained(
+        model_name_or_path,
+        torch_dtype="auto",
+        device_map="auto",
+        trust_remote_code=True
+    )
+    tk = AutoTokenizer.from_pretrained(model_name_or_path)
+    pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map="auto")
 
-tk = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)
+    messages = [
+        {"role": "system", "content": prompt},
+        {"role": "user", "content": text}
+    ]
 
-prompt = "You are an expert in OpenFOAM simulation and numerical modeling.Your task is to generate a complete and functional file named: <file_name>momentumTransport</file_name> within the <folder_name>constant</folder_name> directory. Before finalizing the output, ensure: - Ensure units and dimensions are correct** for all physical variables. - Ensure case solver settings are consistent with the user's requirements. Available solvers are: rhoCentralFoam. Provide only the code—no explanations, comments, or additional text."
-text = "User requirement: Perform a compressible flow simulation using rhoCentralFoam solver for a forward-facing step geometry. The domain consists of three blocks: an inlet section (0.6x0.2), a vertical section (0.6x0.8), and a main channel (2.4x0.8), with a total depth of 0.1 (convertToMeters=1). Use a structured mesh with 48x16 cells for the inlet section, 48x64 cells for the vertical section, and 192x64 cells for the main channel. Set inlet conditions with a fixed velocity of (3 0 0) m/s, fixed pressure of 1 Pa, and temperature of 1 K. Apply symmetryPlane conditions for top and bottom boundaries, slip condition for the obstacle, and wave transmissive outlet condition. The simulation should run from 0 to 4 seconds with an initial timestep of 0.002s and adjustable timestepping (maxCo=0.2, maxDeltaT=1s), writing results every 0.1 seconds. Use laminar flow conditions with perfectGas equation of state (molWeight=11640.3), constant specific heat capacity Cp=2.5, and Prandtl number Pr=1. Implement the Kurganov flux scheme with vanLeer reconstruction for density and temperature, and vanLeerV for velocity."
-# pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map="auto")
+    output = pipe(messages, max_new_tokens=1028, )
+    print(output)
 
-messages = [
-    {"role": "system", "content": prompt},
-    {"role": "user", "content": text}
-]
+if __name__ == "__main__":
+    for i in range(5):
+        name = input("model name: ")
+        prompt = input("system prompt: ")
+        text = input("user prompt: ")
+        model_output(name,prompt,text)
 
-text = tk.apply_chat_template(
-    messages,
-    tokenize=False,
-    add_generation_prompt=True,
-    enable_thinking=True
-)
+# tk = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)
 
-model_inputs = tk([text], return_tensors="pt").to(md.device)
+# prompt = "You are an expert in OpenFOAM simulation and numerical modeling.Your task is to generate a complete and functional file named: <file_name>momentumTransport</file_name> within the <folder_name>constant</folder_name> directory. Before finalizing the output, ensure: - Ensure units and dimensions are correct** for all physical variables. - Ensure case solver settings are consistent with the user's requirements. Available solvers are: rhoCentralFoam. Provide only the code—no explanations, comments, or additional text."
+# text = "User requirement: Perform a compressible flow simulation using rhoCentralFoam solver for a forward-facing step geometry. The domain consists of three blocks: an inlet section (0.6x0.2), a vertical section (0.6x0.8), and a main channel (2.4x0.8), with a total depth of 0.1 (convertToMeters=1). Use a structured mesh with 48x16 cells for the inlet section, 48x64 cells for the vertical section, and 192x64 cells for the main channel. Set inlet conditions with a fixed velocity of (3 0 0) m/s, fixed pressure of 1 Pa, and temperature of 1 K. Apply symmetryPlane conditions for top and bottom boundaries, slip condition for the obstacle, and wave transmissive outlet condition. The simulation should run from 0 to 4 seconds with an initial timestep of 0.002s and adjustable timestepping (maxCo=0.2, maxDeltaT=1s), writing results every 0.1 seconds. Use laminar flow conditions with perfectGas equation of state (molWeight=11640.3), constant specific heat capacity Cp=2.5, and Prandtl number Pr=1. Implement the Kurganov flux scheme with vanLeer reconstruction for density and temperature, and vanLeerV for velocity."
+
+# messages = [
+#     {"role": "system", "content": prompt},
+#     {"role": "user", "content": text}
+# ]
+
+# text = tk.apply_chat_template(
+#     messages,
+#     tokenize=False,
+#     add_generation_prompt=True,
+#     enable_thinking=True
+# )
+
+# model_inputs = tk([text], return_tensors="pt").to(md.device)
 # generated_ids = md.generate(
 #     **model_inputs,
-#     # max_new_tokens=1028
+#     max_new_tokens=1028,
 # )
-generated_ids = md.generate(
-    **model_inputs,
-    max_new_tokens=1028,
-)
-output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
+# output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
 
-try:
-    index = len(output_ids) - output_ids[::-1].index(151668)
-except ValueError:
-    index = 0
+# try:
+#     index = len(output_ids) - output_ids[::-1].index(151668)
+# except ValueError:
+#     index = 0
 
-thinking_content = tk.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
-content = tk.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
+# thinking_content = tk.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
+# content = tk.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
 
-print(content)
+# print(content)
+
+#################################################################################
+
 # generated_ids = [
 #     output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
 # ]
