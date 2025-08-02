@@ -94,10 +94,10 @@ peft_params = LoraConfig(
 )
 
 training_args = SFTConfig(
-    output_dir="./qwen_results",
+    output_dir="foamllama",
     # resume_from_checkpoint="./qwen_results/checkpoint-",
     # compute loss every few steps 1.5k/step
-    num_train_epochs=1,
+    num_train_epochs=3,
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=4, #2
