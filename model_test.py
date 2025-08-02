@@ -38,7 +38,8 @@ messages = [
 ]
 outputs = pipe(
     messages,
-    max_new_tokens=1100,
+    max_new_tokens=1200,
+    temperature=0.1
 )
 print(outputs[0]["generated_text"][-1]['content'])
 
