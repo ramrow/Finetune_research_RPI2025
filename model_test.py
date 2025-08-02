@@ -53,6 +53,10 @@ content = tk.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
 
 print(content)
 
+pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map={"":0})
+output = pipe(messages, max_new_tokens=512)
+print(output[0]['generated_text'][2]['content'])
+
 #################################################################################
 
 # generated_ids = [
