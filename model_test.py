@@ -42,23 +42,19 @@ generated_ids = md.generate(
     max_new_tokens=1028,
 )
 
-generated_ids = [
-        output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
-    ]
-response = tk.batch_decode(generated_ids, skip_special_tokens=True)[0].strip()
-print(response + "is empty check")
 #################################################################################
 
-# output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
-# try:
-#     index = len(output_ids) - output_ids[::-1].index(151668)
-# except ValueError:
-#     index = 0
+output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
+try:
+    index = len(output_ids) - output_ids[::-1].index(151668)
+except ValueError:
+    index = 0
 
-# thinking_content = tk.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
-# content = tk.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
+thinking_content = tk.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
+content = tk.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
 
-# print(content)
+print(thinking_content)
+print(content)
 
 #################################################################################
 
