@@ -9,7 +9,7 @@ from transformers import (
 import torch
 import os
 
-model_name_or_path =  "finalform/foamqwen2.5"
+model_name_or_path =  "finalform/foamLlama3.1-8B-Instruct-trl"
 
 md = AutoModelForCausalLM.from_pretrained(
     model_name_or_path,
@@ -53,7 +53,7 @@ except ValueError:
 thinking_content = tk.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
 content = tk.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
 
-print(thinking_content)
+# print(thinking_content)
 print(content)
 
 #################################################################################
