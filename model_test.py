@@ -42,8 +42,9 @@ generated_ids = md.generate(
     max_new_tokens=1028,
 )
 print(generated_ids)
+response = tk.batch_decode(generated_ids, skip_special_tokens=True)[0]
+print(response)
 output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
-print(output_ids)
 try:
     index = len(output_ids) - output_ids[::-1].index(151668)
 except ValueError:
