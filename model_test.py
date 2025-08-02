@@ -9,64 +9,49 @@ from transformers import (
 import torch
 import os
 
-def model_output(model_name_or_path, prompt, text):
+model_name_or_path = input("model name: ")
 
-    md = AutoModelForCausalLM.from_pretrained(
-        model_name_or_path,
-        torch_dtype="auto",
-        device_map="auto",
-        trust_remote_code=True
-    )
-    tk = AutoTokenizer.from_pretrained(model_name_or_path)
-    pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map="auto")
+md = AutoModelForCausalLM.from_pretrained(
+    model_name_or_path,
+    torch_dtype="auto",
+    device_map="auto",
+    trust_remote_code=True
+)
 
-    messages = [
-        {"role": "system", "content": prompt},
-        {"role": "user", "content": text}
-    ]
 
-    output = pipe(messages, max_new_tokens=1028, )
-    print(output)
+tk = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)
 
-if __name__ == "__main__":
-        name = "finalform/foamQwen3-8B"
-        prompt = "You are an expert in OpenFOAM simulation and numerical modeling.Your task is to generate a complete and functional file named: <file_name>k</file_name> within the <folder_name>0</folder_name> directory. Before finalizing the output, ensure:- Ensure units and dimensions are correct** for all physical variables.- Ensure case solver settings are consistent with the user's requirements. Available solvers are: boundaryFoam. Provide only the code—no explanations, comments, or additional text."
-        text =  "User requirement: Do a turbulent boundary layer simulation using boundaryFoam solver with k-epsilon RAS turbulence model. The domain is a rectangular channel with dimensions 0.1 x 2 x 0.1 (convertToMeters = 0.05). Use a structured mesh with 1x80x1 cells (two blocks of 1x40x1 each). Set boundary conditions as: no-slip walls at upper and lower walls with wall functions (nutkWallFunction, kqRWallFunction, epsilonWallFunction, omegaWallFunction), cyclic conditions for front and back faces, and empty type for defaultFaces. Initialize the flow with uniform velocity of (1 0 0) m/s, k=1e-09 m²/s², epsilon=1e-08 m²/s³, and omega=1111.11 1/s. Set kinematic viscosity to 1e-8 m²/s with a target bulk velocity (Ubar) of 10 m/s. Run as steady-state simulation until time=1000 with deltaT=1, writing results every 100 timesteps. Use PISO algorithm with 2 correctors, momentum predictor enabled, and no non-orthogonal correctors. Apply relaxation factors of 0.5 for U and 0.7 for turbulence quantities. Just modify the necessary parts to make the file complete and functional.Please ensure that the generated file is complete, functional, and logically sound.Additionally, apply your domain expertise to verify that all numerical values are consistent with the user's requirements, maintaining accuracy and coherence.When generating controlDict, do not include anything to preform post processing. Just include the necessary settings to run the simulation."
-        model_output(name,prompt,text)
+prompt = "You are an expert in OpenFOAM simulation and numerical modeling.Your task is to generate a complete and functional file named: <file_name>momentumTransport</file_name> within the <folder_name>constant</folder_name> directory. Before finalizing the output, ensure: - Ensure units and dimensions are correct** for all physical variables. - Ensure case solver settings are consistent with the user's requirements. Available solvers are: rhoCentralFoam. Provide only the code—no explanations, comments, or additional text."
+text = "User requirement: Perform a compressible flow simulation using rhoCentralFoam solver for a forward-facing step geometry. The domain consists of three blocks: an inlet section (0.6x0.2), a vertical section (0.6x0.8), and a main channel (2.4x0.8), with a total depth of 0.1 (convertToMeters=1). Use a structured mesh with 48x16 cells for the inlet section, 48x64 cells for the vertical section, and 192x64 cells for the main channel. Set inlet conditions with a fixed velocity of (3 0 0) m/s, fixed pressure of 1 Pa, and temperature of 1 K. Apply symmetryPlane conditions for top and bottom boundaries, slip condition for the obstacle, and wave transmissive outlet condition. The simulation should run from 0 to 4 seconds with an initial timestep of 0.002s and adjustable timestepping (maxCo=0.2, maxDeltaT=1s), writing results every 0.1 seconds. Use laminar flow conditions with perfectGas equation of state (molWeight=11640.3), constant specific heat capacity Cp=2.5, and Prandtl number Pr=1. Implement the Kurganov flux scheme with vanLeer reconstruction for density and temperature, and vanLeerV for velocity."
 
-# tk = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)
+messages = [
+    {"role": "system", "content": prompt},
+    {"role": "user", "content": text}
+]
 
-# prompt = "You are an expert in OpenFOAM simulation and numerical modeling.Your task is to generate a complete and functional file named: <file_name>momentumTransport</file_name> within the <folder_name>constant</folder_name> directory. Before finalizing the output, ensure: - Ensure units and dimensions are correct** for all physical variables. - Ensure case solver settings are consistent with the user's requirements. Available solvers are: rhoCentralFoam. Provide only the code—no explanations, comments, or additional text."
-# text = "User requirement: Perform a compressible flow simulation using rhoCentralFoam solver for a forward-facing step geometry. The domain consists of three blocks: an inlet section (0.6x0.2), a vertical section (0.6x0.8), and a main channel (2.4x0.8), with a total depth of 0.1 (convertToMeters=1). Use a structured mesh with 48x16 cells for the inlet section, 48x64 cells for the vertical section, and 192x64 cells for the main channel. Set inlet conditions with a fixed velocity of (3 0 0) m/s, fixed pressure of 1 Pa, and temperature of 1 K. Apply symmetryPlane conditions for top and bottom boundaries, slip condition for the obstacle, and wave transmissive outlet condition. The simulation should run from 0 to 4 seconds with an initial timestep of 0.002s and adjustable timestepping (maxCo=0.2, maxDeltaT=1s), writing results every 0.1 seconds. Use laminar flow conditions with perfectGas equation of state (molWeight=11640.3), constant specific heat capacity Cp=2.5, and Prandtl number Pr=1. Implement the Kurganov flux scheme with vanLeer reconstruction for density and temperature, and vanLeerV for velocity."
+text = tk.apply_chat_template(
+    messages,
+    tokenize=False,
+    add_generation_prompt=True,
+    enable_thinking=True
+)
 
-# messages = [
-#     {"role": "system", "content": prompt},
-#     {"role": "user", "content": text}
-# ]
+model_inputs = tk([text], return_tensors="pt").to(md.device)
+generated_ids = md.generate(
+    **model_inputs,
+    max_new_tokens=1028,
+)
+output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
 
-# text = tk.apply_chat_template(
-#     messages,
-#     tokenize=False,
-#     add_generation_prompt=True,
-#     enable_thinking=True
-# )
+try:
+    index = len(output_ids) - output_ids[::-1].index(151668)
+except ValueError:
+    index = 0
 
-# model_inputs = tk([text], return_tensors="pt").to(md.device)
-# generated_ids = md.generate(
-#     **model_inputs,
-#     max_new_tokens=1028,
-# )
-# output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
+thinking_content = tk.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
+content = tk.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
 
-# try:
-#     index = len(output_ids) - output_ids[::-1].index(151668)
-# except ValueError:
-#     index = 0
-
-# thinking_content = tk.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
-# content = tk.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
-
-# print(content)
+print(content)
 
 #################################################################################
 
