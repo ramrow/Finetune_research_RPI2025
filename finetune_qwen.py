@@ -40,8 +40,8 @@ def tokenize_data(example):
 
 
 ds = (load_dataset("LeoYML/FoamGPT",)).shuffle()
-model="Qwen/Qwen2.5-Coder-7B"
-new_model = "qwen-foam"
+model="meta-llama/Llama-3.1-8B-Instruct"
+new_model = "foamllama"
 
 # md = AutoModelForCausalLM.from_pretrained(
 #     model,
