@@ -51,7 +51,7 @@ new_model = "qwen-foam"
 #     torch_dtype=torch.bfloat16,
 # )
 
-md = AutoModelForVision2Seq.from_pretrained(
+md = AutoModelForCausalLM.from_pretrained(
     model,
     quantization_config=quant_config,
     device_map="auto",
