@@ -29,10 +29,9 @@ def model_output(model_name_or_path, prompt, text):
     print(output)
 
 if __name__ == "__main__":
-    for i in range(5):
-        name = input("model name: ")
-        prompt = input("system prompt: ")
-        text = input("user prompt: ")
+        name = "finalform/foamQwen3-8B"
+        prompt = "You are an expert in OpenFOAM simulation and numerical modeling.Your task is to generate a complete and functional file named: <file_name>k</file_name> within the <folder_name>0</folder_name> directory. Before finalizing the output, ensure:- Ensure units and dimensions are correct** for all physical variables.- Ensure case solver settings are consistent with the user's requirements. Available solvers are: boundaryFoam. Provide only the code—no explanations, comments, or additional text."
+        text =  "User requirement: Do a turbulent boundary layer simulation using boundaryFoam solver with k-epsilon RAS turbulence model. The domain is a rectangular channel with dimensions 0.1 x 2 x 0.1 (convertToMeters = 0.05). Use a structured mesh with 1x80x1 cells (two blocks of 1x40x1 each). Set boundary conditions as: no-slip walls at upper and lower walls with wall functions (nutkWallFunction, kqRWallFunction, epsilonWallFunction, omegaWallFunction), cyclic conditions for front and back faces, and empty type for defaultFaces. Initialize the flow with uniform velocity of (1 0 0) m/s, k=1e-09 m²/s², epsilon=1e-08 m²/s³, and omega=1111.11 1/s. Set kinematic viscosity to 1e-8 m²/s with a target bulk velocity (Ubar) of 10 m/s. Run as steady-state simulation until time=1000 with deltaT=1, writing results every 100 timesteps. Use PISO algorithm with 2 correctors, momentum predictor enabled, and no non-orthogonal correctors. Apply relaxation factors of 0.5 for U and 0.7 for turbulence quantities. Just modify the necessary parts to make the file complete and functional.Please ensure that the generated file is complete, functional, and logically sound.Additionally, apply your domain expertise to verify that all numerical values are consistent with the user's requirements, maintaining accuracy and coherence.When generating controlDict, do not include anything to preform post processing. Just include the necessary settings to run the simulation."
         model_output(name,prompt,text)
 
 # tk = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)
