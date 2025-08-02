@@ -46,7 +46,7 @@ generated_ids = [
         output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
     ]
 response = tk.batch_decode(generated_ids, skip_special_tokens=True)[0].strip()
-print(response)
+print(response + "is empty check")
 #################################################################################
 
 # output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
