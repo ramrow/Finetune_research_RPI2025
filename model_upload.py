@@ -4,7 +4,7 @@ import os
 token = input()
 api = HfApi(token=os.getenv(token))
 api.upload_folder(
-    folder_path="./factory_qwen_results",
-    repo_id="finalform/testfoam-2.5coder",
+    folder_path="./qwen-foam",
+    repo_id="finalform/foamqwen2.5",
     repo_type="model",
 )
