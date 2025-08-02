@@ -41,8 +41,9 @@ generated_ids = md.generate(
     **model_inputs,
     max_new_tokens=1028,
 )
+print(generated_ids)
 output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
-
+print(output_ids)
 try:
     index = len(output_ids) - output_ids[::-1].index(151668)
 except ValueError:
@@ -53,9 +54,9 @@ content = tk.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
 
 print(content)
 
-pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map={"":0})
-output = pipe(messages, max_new_tokens=512)
-print(output[0]['generated_text'][2]['content'])
+# pipe = pipeline(task="text-generation", model=md, tokenizer=tk, device_map={"":0})
+# output = pipe(messages, max_new_tokens=512)
+# print(output[0]['generated_text'][2]['content'])
 
 #################################################################################
 
