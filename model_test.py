@@ -8,7 +8,42 @@ from transformers import (
 )
 import torch
 import os
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
+model_name = "Qwen/Qwen2.5-Coder-7B-Instruct"
+
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    torch_dtype="auto",
+    device_map="auto"
+)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+prompt = "write a quick sort algorithm."
+messages = [
+    {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
+    {"role": "user", "content": prompt}
+]
+text = tokenizer.apply_chat_template(
+    messages,
+    tokenize=False,
+    add_generation_prompt=True
+)
+model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
+
+generated_ids = model.generate(
+    **model_inputs,
+    max_new_tokens=512
+)
+generated_ids = [
+    output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+]
+
+response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+
+##############################################################################
+##############################################################################
+"""
 model_name_or_path =  "finalform/foamMistral0.3-7B-Instruct-trl"
 
 md = AutoModelForCausalLM.from_pretrained(
@@ -18,9 +53,7 @@ md = AutoModelForCausalLM.from_pretrained(
     trust_remote_code=True
 )
 
-
 tk = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)
-
 
 prompt = "You are an expert in OpenFOAM simulation and numerical modeling.Your task is to generate a complete and functional file named: <file_name>fvSolution</file_name> within the <folder_name>system</folder_name> directory. Before finalizing the output, ensure: - Ensure units and dimensions are correct** for all physical variables. - Ensure case solver settings are consistent with the user's requirements. Available solvers are: interFoam. Provide only the code—no explanations, comments, or additional text."
 user = "User requirement: Perform a multiphase water channel simulation using interFoam solver with k-omega-SST turbulence model. The domain is a 3D channel with dimensions 20x20x6 units (convertToMeters=1). The channel geometry consists of three blocks: a lower section (20x7x6), middle section (20x6x6), and upper section (20x7x6). Initial water level is set at z=2.2 units, with water below and air above. Inlet boundary has a fixed volumetric flow rate of 50 m³/s, walls have no-slip condition, atmosphere patch uses prghTotalPressure with p0=0, and outlet has inletOutlet velocity condition. Use PIMPLE algorithm with 2 correctors and no non-orthogonal corrections. Physical properties include: water (rho=1000 kg/m³, nu=1e-06 m²/s), air (rho=1 kg/m³, nu=1.48e-05 m²/s), and surface tension coefficient of 0.07 N/m. Gravity is set to (0,0,-9.81) m/s². The mesh consists of three blocks with grading (20,5,20), (20,10,20), and (20,5,20) cells respectively. Run simulation from t=0 to t=200s with initial deltaT=0.1s, adjustable timestep with maxCo=6, and write results every 5 seconds. Initial turbulence conditions: k=0.0001 m²/s², omega=0.003 1/s, with 5% intensity at inlet. Just modify the necessary parts to make the file complete and functional.Please ensure that the generated file is complete, functional, and logically sound.Additionally, apply your domain expertise to verify that all numerical values are consistent with the user's requirements, maintaining accuracy and coherence.When generating controlDict, do not include anything to preform post processing. Just include the necessary settings to run the simulation."
@@ -43,8 +76,6 @@ generated_ids = md.generate(
     max_new_tokens=1028,
 )
 
-#################################################################################
-
 output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
 try:
     index = len(output_ids) - output_ids[::-1].index(151668)
@@ -54,9 +85,10 @@ except ValueError:
 thinking_content = tk.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
 content = tk.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
 
-# print(thinking_content)
 print(content)
 
+"""
+#################################################################################
 #################################################################################
 
 # generated_ids = [
