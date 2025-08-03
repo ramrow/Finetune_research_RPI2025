@@ -40,16 +40,11 @@ def tokenize_data(example):
 
 
 ds = (load_dataset("LeoYML/FoamGPT",)).shuffle()
-model="meta-llama/Llama-3.1-8B-Instruct"
-new_model = "foamllama"
+model="mistralai/Mistral-7B-Instruct-v0.3"
+new_model = "foammistral"
 
-# md = AutoModelForCausalLM.from_pretrained(
-#     model,
-#     quantization_config=quant_config,
-#     device_map="auto",
-#     trust_remote_code=True,
-#     torch_dtype=torch.bfloat16,
-# )
+with open("chat_templates/mistral_template.jinja", "r") as f:
+    chat_template = f.read()
 
 md = AutoModelForCausalLM.from_pretrained(
     model,
@@ -64,18 +59,12 @@ md.config.pretraining_tp = 1
 
 tokenizer = AutoTokenizer.from_pretrained(model, trust_remote_code=True)
 tokenizer.return_tensors = "pt"
-tokenizer.pad_token = tokenizer.eos_token
 # print(tokenizer.pad_token, tokenizer.eos_token)
-# tokenizer.pad_token = '<|endoftext|>'
-# tokenizer.eos_token = '<|endoftext|>'
+tokenizer.pad_token = tokenizer.eos_token
+
 tokenizer.padding_side = "right"
 
-#######################
-# tokenizer.chat_template =   "{% for message in messages %}{% if loop.first and message['role'] != 'system' %}" \
-#                             "{{ '<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n' }}{% endif %}{{ " \
-#                             "'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>\n' }}{% if " \
-#                             "loop.last and add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}{% endfor %}"
-#######################
+# tokenizer.chat_template = chat_template
 
 train_ds = ds['train'].map(apply_chat_template)
 test_ds = ds['test'].map(apply_chat_template)
@@ -94,10 +83,10 @@ peft_params = LoraConfig(
 )
 
 training_args = SFTConfig(
-    output_dir="foamllama",
+    output_dir="foammistral",
     # resume_from_checkpoint="./qwen_results/checkpoint-",
     # compute loss every few steps 1.5k/step
-    num_train_epochs=2,
+    num_train_epochs=3,
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=4, #2
