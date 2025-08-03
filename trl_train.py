@@ -40,8 +40,8 @@ def tokenize_data(example):
 
 
 ds = (load_dataset("LeoYML/FoamGPT",)).shuffle()
-model="mistralai/Mistral-7B-Instruct-v0.3"
-new_model = "foammistral"
+model="meta-llama/Llama-3.1-8B-Instruct"
+new_model = "foamllama"
 
 # with open("chat_templates/mistral_template.jinja", "r") as f:
 #     chat_template = f.read()
@@ -83,7 +83,7 @@ peft_params = LoraConfig(
 )
 
 training_args = SFTConfig(
-    output_dir="foammistral",
+    output_dir="foamllama",
     # resume_from_checkpoint="./qwen_results/checkpoint-",
     # compute loss every few steps 1.5k/step
     num_train_epochs=3,

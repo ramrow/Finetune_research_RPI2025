@@ -40,8 +40,8 @@ def tokenize_data(example):
 
 
 ds = (load_dataset("LeoYML/FoamGPT",)).shuffle()
-model="mistralai/Mistral-7B-Instruct-v0.3"
-new_model = "foamistral"
+model="meta-llama/Llama-3.1-8B-Instruct"
+new_model = "foamllama"
 
 md = AutoModelForCausalLM.from_pretrained(
     model,
@@ -79,7 +79,7 @@ peft_params = LoraConfig(
 )
 
 training_args = SFTConfig(
-    output_dir="foamistral",
+    output_dir="foamllama",
     # resume_from_checkpoint="./qwen_results/checkpoint-",
     # compute loss every few steps 1.5k/step
     num_train_epochs=3,
