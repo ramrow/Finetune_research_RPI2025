@@ -62,8 +62,11 @@ tokenizer.pad_token = tokenizer.eos_token
 # tokenizer.eos_token = '<|endoftext|>'
 tokenizer.padding_side = "right"
 
+train_ds = ds['train'].map(apply_chat_template)
 test_ds = ds['test'].map(apply_chat_template)
+tokenized_train_ds = train_ds.map(tokenize_data)
 tokenized_test_ds = test_ds.map(tokenize_data)
+tokenized_train_ds = tokenized_train_ds.remove_columns(["text", "system_prompt", "user_prompt", "folder_name", "file_name", "case_name", "case_domain", "user_requirement", "file_content", "case_category", "case_solver"])
 tokenized_test_ds = tokenized_test_ds.remove_columns(["text", "system_prompt", "user_prompt", "folder_name", "file_name", "case_name", "case_domain", "user_requirement", "file_content", "case_category", "case_solver"])
 
 peft_params = LoraConfig(
@@ -103,7 +106,7 @@ peft_md = get_peft_model(md, peft_params)
 
 trainer = SFTTrainer(
     model=peft_md,
-    train_dataset=ds['train'],
+    train_dataset=tokenized_train_ds,
     eval_dataset=tokenized_test_ds,
     args=training_args,
     processing_class=tokenizer,
