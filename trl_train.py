@@ -43,8 +43,8 @@ ds = (load_dataset("LeoYML/FoamGPT",)).shuffle()
 model="mistralai/Mistral-7B-Instruct-v0.3"
 new_model = "foammistral"
 
-with open("chat_templates/mistral_template.jinja", "r") as f:
-    chat_template = f.read()
+# with open("chat_templates/mistral_template.jinja", "r") as f:
+#     chat_template = f.read()
 
 md = AutoModelForCausalLM.from_pretrained(
     model,
@@ -86,7 +86,7 @@ training_args = SFTConfig(
     output_dir="foammistral",
     # resume_from_checkpoint="./qwen_results/checkpoint-",
     # compute loss every few steps 1.5k/step
-    num_train_epochs=3,
+    num_train_epochs=2,
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=4, #2
