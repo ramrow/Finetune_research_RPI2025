@@ -9,7 +9,7 @@ from transformers import (
 import torch
 import os
 
-model_name_or_path =  "finalform/foamLlama3.1-8B-Instruct-trl"
+model_name_or_path =  "finalform/foamLlama3.1-8B-Instruct"
 
 md = AutoModelForCausalLM.from_pretrained(
     model_name_or_path,
