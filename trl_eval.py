@@ -82,12 +82,12 @@ training_args = SFTConfig(
     output_dir="foamqwen",
     # resume_from_checkpoint="./qwen_results/checkpoint-",
     # compute loss every few steps 1.5k/step
-    num_train_epochs=3,
+    num_train_epochs=5,
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=4, #2
     optim="paged_adamw_32bit", #paged_adamw_32bit
-    save_steps=750,
+    # save_steps=750,
     logging_steps=25,
     learning_rate=3e-4,
     weight_decay=0.001,
@@ -100,6 +100,8 @@ training_args = SFTConfig(
     lr_scheduler_type="cosine",
     report_to="tensorboard",
     packing=False,
+    eval_strategy="epoch",
+    save_strategy="epoch",
 )
 
 peft_md = get_peft_model(md, peft_params)
