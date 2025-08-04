@@ -10,7 +10,7 @@ import torch
 import os
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-model_name = "Qwen/Qwen2.5-Coder-7B-Instruct"
+model_name = "finalform/foamLlama3.1-8B-Instruct-trl"
 
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
