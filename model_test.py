@@ -19,7 +19,8 @@ model = AutoModelForCausalLM.from_pretrained(
 )
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-prompt = "write a quick sort algorithm."
+system = "You are an expert in OpenFOAM simulation and numerical modeling.Your task is to generate a complete and functional file named: <file_name>T.particles</file_name> within the <folder_name>0</folder_name> directory. Before finalizing the output, ensure: - Ensure units and dimensions are correct** for all physical variables. - Ensure case solver settings are consistent with the user's requirements. Available solvers are: multiphaseEulerFoam. Provide only the code—no explanations, comments, or additional text."
+prompt = "User requirement: Perform a multiphase Euler-Euler simulation of particle-laden flow through a bent pipe using multiphaseEulerFoam solver. The domain consists of a pipe with diameter 28.28mm (inner diameter 19.8mm) that runs vertically for 400mm before transitioning through a 90-degree bend, followed by a horizontal section of 460mm length. Use convertToMeters value of 1e-3. The simulation involves water as continuous phase (density 997 kg/m3, viscosity 8.9e-4 m2/s) and particles as dispersed phase (density 1400 kg/m3) with initial volume fractions of 0.999 and 0.001 respectively. At inlet, set fixed velocity of (0 0.5 0) m/s for both phases, with water temperature of 300K. Use RNGkEpsilon turbulence model for water phase and phasePressure model for particles phase. The particle size distribution ranges from 1μm to 250μm divided into 30 groups with specified initial probability distribution. Apply no-slip condition for water and slip condition for particles at walls, with zeroGradient conditions at outlet. Set initial pressure to 1e5 Pa. Use PIMPLE algorithm with 3 outer correctors and 2 inner correctors. The mesh consists of 15 blocks with grading of 0.35 in radial direction. Run simulation from 0 to 2 seconds with adjustable timestep (initial 0.003s, maxCo=1) and write results every 0.1 seconds. Include population balance modeling for particle agglomeration using AdachiStuartFokkink coalescence model and Kusters breakup model. Please ensure that the generated file is complete, functional, and logically sound.Additionally, apply your domain expertise to verify that all numerical values are consistent with the user's requirements, maintaining accuracy and coherence.When generating controlDict, do not include anything to preform post processing. Just include the necessary settings to run the simulation."
 messages = [
     {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
     {"role": "user", "content": prompt}
@@ -33,7 +34,7 @@ model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
 generated_ids = model.generate(
     **model_inputs,
-    max_new_tokens=512
+    max_new_tokens=1028
 )
 generated_ids = [
     output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
