@@ -82,7 +82,7 @@ training_args = SFTConfig(
     output_dir="foamqwen",
     # resume_from_checkpoint="./qwen_results/checkpoint-",
     # compute loss every few steps 1.5k/step
-    num_train_epochs=9,
+    num_train_epochs=7,
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=4, #2
