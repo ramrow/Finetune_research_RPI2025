@@ -3,14 +3,14 @@ from transformers import (
     AutoModelForCausalLM, 
     AutoTokenizer,
     AutoProcessor,
-    AutoModelForVision2Seq, 
+    AutoModelForVision2Seq,
     Qwen2_5_VLForConditionalGeneration
 )
 import torch
 import os
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-model_name = "finalform/foamMistral0.3-7B-Instruct-trl"
+model_name = "finalform/foamLlama3.1-8B-Instruct-trl"
 
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
@@ -34,7 +34,7 @@ model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
 generated_ids = model.generate(
     **model_inputs,
-    max_new_tokens=128
+    max_new_tokens=1024
 )
 generated_ids = [
     output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
