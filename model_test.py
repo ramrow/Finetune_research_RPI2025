@@ -37,25 +37,25 @@ model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 generated_ids = model.generate(
     **model_inputs,
     max_new_tokens=1024,
-    temperature=0.2,
+    temperature=0.1,
 )
 generated_ids = [
     output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
 ]
 
 
-output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
-try:
-    index = len(output_ids) - output_ids[::-1].index(151668)
-except ValueError:
-    index = 0
+# output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
+# try:
+#     index = len(output_ids) - output_ids[::-1].index(151668)
+# except ValueError:
+#     index = 0
 
-thinking_content = tokenizer.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
-content = tokenizer.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
-print(thinking_content)
-# print(content)
-# response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-# print(response)
+# thinking_content = tokenizer.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
+# content = tokenizer.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
+# print(thinking_content)
+# # print(content)
+response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+print(response)
 ##############################################################################
 ##############################################################################
 """
