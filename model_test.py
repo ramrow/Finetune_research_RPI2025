@@ -34,7 +34,8 @@ model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
 generated_ids = model.generate(
     **model_inputs,
-    max_new_tokens=1024
+    max_new_tokens=1024,
+    temperature=0.2,
 )
 generated_ids = [
     output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
