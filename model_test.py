@@ -55,8 +55,9 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # # print("thinking content:", thinking_content)
 # print( content)
-##############################################################################
-##############################################################################
+
+#################################################################################
+#################################################################################
 
 
 model_name = "finalform/foamQwen3-8B-trl"
@@ -86,7 +87,7 @@ model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 generated_ids = model.generate(
     **model_inputs,
     max_new_tokens=1024,
-    temperature=0.1,
+    temperature=0.6,
 )
 generated_ids = [
     output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
@@ -95,8 +96,8 @@ generated_ids = [
 response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 print(response)
 
-##############################################################################
-##############################################################################
+#################################################################################
+#################################################################################
 """
 model_name_or_path =  "finalform/foamMistral0.3-7B-Instruct-trl"
 
@@ -156,7 +157,8 @@ print(content)
 # result = output[0]['generated_text'][-1]['content']
 # print(result)
 
-###########################################
+#################################################################################
+#################################################################################
 
 # print(len(output))
 # print(result)
@@ -192,3 +194,5 @@ print(content)
 # output = pipe(messages, max_new_tokens=512)
 # print(output[0]['generated_text'][2]['content'])
 
+#################################################################################
+#################################################################################
