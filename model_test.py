@@ -11,7 +11,7 @@ import os
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-model_name = "finalform/foamLlama3.1-8B-Instruct-trl"
+model_name = "finalform/foamMistral0.3-7B-Instruct-trl"
 
 # load the tokenizer and the model
 tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -54,8 +54,8 @@ except ValueError:
 thinking_content = tokenizer.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
 content = tokenizer.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
 
-print("thinking content:", thinking_content)
-print("content:", content)
+# print("thinking content:", thinking_content)
+print( content)
 ##############################################################################
 ##############################################################################
 
