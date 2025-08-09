@@ -28,7 +28,9 @@ messages = [
 text = tokenizer.apply_chat_template(
     messages,
     tokenize=False,
-    add_generation_prompt=True
+    add_generation_prompt=True,
+    enable_thinking=True,
+
 )
 model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
@@ -41,8 +43,19 @@ generated_ids = [
     output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
 ]
 
-response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-print(response)
+
+output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
+try:
+    index = len(output_ids) - output_ids[::-1].index(151668)
+except ValueError:
+    index = 0
+
+thinking_content = tokenizer.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
+content = tokenizer.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
+
+print(content)
+# response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+# print(response)
 ##############################################################################
 ##############################################################################
 """
