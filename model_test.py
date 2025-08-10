@@ -55,6 +55,7 @@ thinking_content = tokenizer.decode(output_ids[:index], skip_special_tokens=True
 content = tokenizer.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
 
 # print("thinking content:", thinking_content)
+print( thinking_content)
 print( content)
 
 #################################################################################
