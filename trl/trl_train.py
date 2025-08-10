@@ -110,6 +110,8 @@ training_args = SFTConfig(
 )
 
 peft_md = get_peft_model(md, peft_params)
+for param in peft_md.parameters():
+    print(param.requires_grad)
 
 trainer = SFTTrainer(
     model=peft_md,
