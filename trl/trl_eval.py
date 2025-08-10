@@ -11,6 +11,7 @@ from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
+torch.set_grad_enabled(True)
 
 quant_config = BitsAndBytesConfig(
     load_in_4bit=True,
