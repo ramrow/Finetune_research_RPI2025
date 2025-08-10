@@ -84,6 +84,7 @@ training_args = SFTConfig(
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=4, #2
+    gradient_checkpointing=True,
     optim="paged_adamw_32bit", #paged_adamw_32bit
     # save_steps=750,
     logging_steps=25,

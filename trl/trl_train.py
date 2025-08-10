@@ -76,7 +76,7 @@ peft_params = LoraConfig(
     r=32, #change rank
     bias="none",
     task_type="CAUSAL_LM",
-    target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+    target_modules="all-linear",
 
 )
 
@@ -88,6 +88,7 @@ training_args = SFTConfig(
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=4, 
+    gradient_checkpointing=True,
     optim="paged_adamw_32bit",
     # save_steps=750,
     logging_steps=25,
