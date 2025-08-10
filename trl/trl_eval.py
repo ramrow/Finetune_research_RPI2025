@@ -50,8 +50,6 @@ md = AutoModelForCausalLM.from_pretrained(
     trust_remote_code=True,
     torch_dtype=torch.bfloat16,
 )
-for param in md.parameters():
-    param.requires_grad = True
 
 md.config.use_cache = False
 md.config.pretraining_tp = 1
@@ -59,9 +57,6 @@ md.config.pretraining_tp = 1
 tokenizer = AutoTokenizer.from_pretrained(model, trust_remote_code=True)
 tokenizer.return_tensors = "pt"
 tokenizer.pad_token = tokenizer.eos_token
-# print(tokenizer.pad_token, tokenizer.eos_token)
-# tokenizer.pad_token = '<|endoftext|>'
-# tokenizer.eos_token = '<|endoftext|>'
 tokenizer.padding_side = "right"
 
 train_ds = ds['train'].map(apply_chat_template)
@@ -87,7 +82,7 @@ training_args = SFTConfig(
     num_train_epochs=6,
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
-    gradient_accumulation_steps=2, #2
+    gradient_accumulation_steps=4, #2
     optim="paged_adamw_32bit", #paged_adamw_32bit
     # save_steps=750,
     logging_steps=25,

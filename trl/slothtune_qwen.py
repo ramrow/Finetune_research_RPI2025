@@ -6,15 +6,14 @@ from datasets import load_dataset
 class unsloth_qwen():
     def __init__(self):
         self.md, self.tk =  FastLanguageModel.from_pretrained(
-                                model_name= "unsloth/Qwen3-8B-unsloth-bnb-4bit",
+                                model_name= "unsloth/Qwen3-Coder-30B-A3B-Instruct",
                                 max_seq_length= 1028,
                                 load_in_4bit=True,
                             )
         self.md =  FastLanguageModel.get_peft_model(
                                 model= self.md,
                                 r= 32,
-                                target_modules= ["q_proj", "k_proj", "v_proj", "o_proj",
-                                                "gate_proj", "up_proj", "down_proj",],
+                                target_modules= "all-linear",
                                 bias= "none",
                                 lora_dropout= 0.1,
                                 lora_alpha=32, #could be 16
@@ -22,7 +21,7 @@ class unsloth_qwen():
         self.tk.return_tensors = "pt"
         self.tk.pad_token = self.tk.eos_token
         self.tk.padding_side = "right"
-        self.ds = load_dataset("finalform/split_foam",)
+        self.ds = (load_dataset("LeoYML/FoamGPT",)).shuffle()
         self.trd = None
         self.tsd = None
 
@@ -32,9 +31,8 @@ class unsloth_qwen():
 
     def finetune(self):
         training_args = SFTConfig(
-            output_dir="./qwen_results",
-            resume_from_checkpoint="./qwen_results/checkpoint-3000",
-            num_train_epochs=1,
+            output_dir="./foamqwen",
+            num_train_epochs=6,
             per_device_train_batch_size=2,
             per_device_eval_batch_size=2,
             gradient_accumulation_steps=4,
@@ -61,16 +59,18 @@ class unsloth_qwen():
             processing_class=self.tk,
         )
         # trainer.train()
-        trainer.train(resume_from_checkpoint=True)
+        trainer.train()
         trainer.model.save_pretrained("foamqwen")
         trainer.processing_class.save_pretrained("foamqwen")
         trainer.evaluate()
 
     def format_data(self):
-        self.trd = (self.ds['train'].map(self.format_data_helper)).remove_columns(["system_prompt", "usr_prompt", "folder_name",
-                                                                                "file_name", "case_path", "description", "code_content"])
-        self.tsd = (self.ds['test'].map(self.format_data_helper)).remove_columns(["system_prompt", "usr_prompt", 
-                                                                                "folder_name", "file_name", "case_path", "description", "code_content"])
+        self.trd = (self.ds['train'].map(self.format_data_helper)).remove_columns(["text", "system_prompt", "user_prompt", "folder_name", "file_name", 
+                                                                                "case_name", "case_domain", "user_requirement", "file_content", "case_category", "case_solver"])
+
+        self.tsd = (self.ds['test'].map(self.format_data_helper)).remove_columns(["text", "system_prompt", "user_prompt", "folder_name", "file_name", 
+                                                                                "case_name", "case_domain", "user_requirement", "file_content", "case_category", "case_solver"])
+
         # print(self.trd)
         # print(self.tsd)
 
