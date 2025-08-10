@@ -50,6 +50,8 @@ md = AutoModelForCausalLM.from_pretrained(
     trust_remote_code=True,
     torch_dtype=torch.bfloat16,
 )
+for param in md.parameters():
+    param.requires_grad = True
 
 md.config.use_cache = False
 md.config.pretraining_tp = 1

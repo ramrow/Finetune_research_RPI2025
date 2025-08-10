@@ -54,6 +54,9 @@ md = AutoModelForCausalLM.from_pretrained(
     torch_dtype=torch.bfloat16,
 )
 
+for param in md.parameters():
+    param.requires_grad = True
+
 md.config.use_cache = False
 md.config.pretraining_tp = 1
 
@@ -110,8 +113,6 @@ training_args = SFTConfig(
 )
 
 peft_md = get_peft_model(md, peft_params)
-for param in peft_md.parameters():
-    print(param.requires_grad)
 
 trainer = SFTTrainer(
     model=peft_md,
