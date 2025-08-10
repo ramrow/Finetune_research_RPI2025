@@ -11,68 +11,19 @@ import os
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-model_name = "finalform/foamLlama3.1-8B-Instruct-trl"
+# model_name = "finalform/foamLlama3.1-8B-Instruct-trl"
 
-# load the tokenizer and the model
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(
-    model_name,
-    torch_dtype="auto",
-    device_map="auto"
-)
-
-# prepare the model input
-system = "You are an expert in OpenFOAM simulation and numerical modeling.Your task is to generate a complete and functional file named: <file_name>controlDict</file_name> within the <folder_name>system</folder_name> directory. Before finalizing the output, ensure:\n- Ensure units and dimensions are correct** for all physical variables.\n- Ensure case solver settings are consistent with the user's requirements. Available solvers are: rhoPorousSimpleFoam.\nProvide only the code—no explanations, comments, or additional text."
-prompt = "User requirement: Do a compressible flow simulation through an angled duct with porous media using rhoPorousSimpleFoam solver. The geometry consists of three sections: inlet (length 150), porous section (length 100), and outlet section (length 100), with a constant width of 50 and the entire duct is angled at 45 degrees from horizontal. Note: all dimensions are in raw units with convertToMeters=0.001. The mesh should be structured with 15 cells along inlet length, 20 cells along porous section, 20 cells along outlet section, and 20 cells in both y and z directions. Use SIMPLE algorithm with pressure-velocity coupling and include k-epsilon turbulence modeling. Set boundary conditions as walls for porosityWall patch and standard inlet/outlet patches. Run as steady-state simulation from t=0 to t=1000 with deltaT=1 and write results every 100 timesteps. Use GAMG solver for pressure with 1e-08 tolerance and GaussSeidel smoother, and smoothSolver for velocity and turbulence quantities. Apply relaxation factors of 0.3 for pressure, 0.7 for velocity, and 0.9 for k and epsilon. Include pressure limiting constraints with minFactor of 0.5 and maxFactor of 1.5.\nPlease ensure that the generated file is complete, functional, and logically sound.Additionally, apply your domain expertise to verify that all numerical values are consistent with the user's requirements, maintaining accuracy and coherence.When generating controlDict, do not include anything to preform post processing. Just include the necessary settings to run the simulation."
-messages = [
-    {"role": "system", "content": system},
-    {"role": "user", "content": prompt}
-]
-text = tokenizer.apply_chat_template(
-    messages,
-    tokenize=False,
-    add_generation_prompt=True,
-    enable_thinking=True # Switches between thinking and non-thinking modes. Default is True.
-)
-model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
-
-# conduct text completion
-generated_ids = model.generate(
-    **model_inputs,
-    max_new_tokens=32768,
-    temperature=1,
-)
-output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
-
-# parsing thinking content
-try:
-    # rindex finding 151668 (</think>)
-    index = len(output_ids) - output_ids[::-1].index(151668)
-except ValueError:
-    index = 0
-
-thinking_content = tokenizer.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
-content = tokenizer.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
-
-# print("thinking content:", thinking_content)
-print( thinking_content)
-print( content)
-
-#################################################################################
-#################################################################################
-
-
-# model_name = "finalform/foamQwen3-8B-trl"
-
+# # load the tokenizer and the model
+# tokenizer = AutoTokenizer.from_pretrained(model_name)
 # model = AutoModelForCausalLM.from_pretrained(
 #     model_name,
 #     torch_dtype="auto",
 #     device_map="auto"
 # )
-# tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-# system = "You are an expert in OpenFOAM simulation and numerical modeling.Your task is to generate a complete and functional file named: <file_name>controlDict</file_name> within the <folder_name>system</folder_name> directory. Before finalizing the output, ensure: - Ensure units and dimensions are correct** for all physical variables. - Ensure case solver settings are consistent with the user's requirements. Available solvers are: rhoPorousSimpleFoam. Provide only the code—no explanations, comments, or additional text."
-# prompt = "User requirement: Perform a compressible flow simulation through an angled duct with porous media using rhoPorousSimpleFoam solver. The geometry consists of a 45-degree angled duct with three sections: inlet (150 length), porous region (100 length), and outlet (100 length), with a width of 50 units and convertToMeters factor of 0.001. Use k-epsilon RAS turbulence model with standard wall functions. Set inlet with turbulent boundary layer profile and mass flow rate of 0.1 kg/s, outlet with fixed pressure of 1e5 Pa, no-slip condition on walls, and slip condition on porous walls. Initial conditions: temperature 293K, pressure 1e5 Pa, zero velocity field, k=1 m²/s², epsilon=200 m²/s³. Physical properties: air with molecular weight 28.9, Cp=1005 J/kgK, dynamic viscosity 1.82e-5 kg/m·s, Prandtl number 0.71. Mesh consists of 15x20x20 cells in inlet section, 20x20x20 in porous section, and 20x20x20 in outlet section. Porous region parameters: Darcy coefficient d=(5e7 -1000 -1000) and Forchheimer coefficient f=(0 0 0), with coordinate system rotated 45 degrees. Use SIMPLE algorithm with 2 U-correctors, relaxation factors: p=0.3, U=0.7, k/epsilon=0.9. Run steady-state simulation for 100 time units with writeInterval of 10 timesteps. Please ensure that the generated file is complete, functional, and logically sound.Additionally, apply your domain expertise to verify that all numerical values are consistent with the user's requirements, maintaining accuracy and coherence.When generating controlDict, do not include anything to preform post processing. Just include the necessary settings to run the simulation."
+# # prepare the model input
+# system = "You are an expert in OpenFOAM simulation and numerical modeling.Your task is to generate a complete and functional file named: <file_name>controlDict</file_name> within the <folder_name>system</folder_name> directory. Before finalizing the output, ensure:\n- Ensure units and dimensions are correct** for all physical variables.\n- Ensure case solver settings are consistent with the user's requirements. Available solvers are: rhoPorousSimpleFoam.\nProvide only the code—no explanations, comments, or additional text."
+# prompt = "User requirement: Do a compressible flow simulation through an angled duct with porous media using rhoPorousSimpleFoam solver. The geometry consists of three sections: inlet (length 150), porous section (length 100), and outlet section (length 100), with a constant width of 50 and the entire duct is angled at 45 degrees from horizontal. Note: all dimensions are in raw units with convertToMeters=0.001. The mesh should be structured with 15 cells along inlet length, 20 cells along porous section, 20 cells along outlet section, and 20 cells in both y and z directions. Use SIMPLE algorithm with pressure-velocity coupling and include k-epsilon turbulence modeling. Set boundary conditions as walls for porosityWall patch and standard inlet/outlet patches. Run as steady-state simulation from t=0 to t=1000 with deltaT=1 and write results every 100 timesteps. Use GAMG solver for pressure with 1e-08 tolerance and GaussSeidel smoother, and smoothSolver for velocity and turbulence quantities. Apply relaxation factors of 0.3 for pressure, 0.7 for velocity, and 0.9 for k and epsilon. Include pressure limiting constraints with minFactor of 0.5 and maxFactor of 1.5.\nPlease ensure that the generated file is complete, functional, and logically sound.Additionally, apply your domain expertise to verify that all numerical values are consistent with the user's requirements, maintaining accuracy and coherence.When generating controlDict, do not include anything to preform post processing. Just include the necessary settings to run the simulation."
 # messages = [
 #     {"role": "system", "content": system},
 #     {"role": "user", "content": prompt}
@@ -81,22 +32,71 @@ print( content)
 #     messages,
 #     tokenize=False,
 #     add_generation_prompt=True,
-#     enable_thinking=True,
-
+#     enable_thinking=True # Switches between thinking and non-thinking modes. Default is True.
 # )
 # model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
+# # conduct text completion
 # generated_ids = model.generate(
 #     **model_inputs,
-#     max_new_tokens=1024,
-#     temperature=0.6,
+#     max_new_tokens=32768,
+#     temperature=1,
 # )
-# generated_ids = [
-#     output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
-# ]
+# output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
 
-# response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-# print(response)
+# # parsing thinking content
+# try:
+#     # rindex finding 151668 (</think>)
+#     index = len(output_ids) - output_ids[::-1].index(151668)
+# except ValueError:
+#     index = 0
+
+# thinking_content = tokenizer.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
+# content = tokenizer.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
+
+# # print("thinking content:", thinking_content)
+# print( thinking_content)
+# print( content)
+
+#################################################################################
+#################################################################################
+
+
+model_name = "finalform/foamQwen3-8B-trl"
+
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    torch_dtype="auto",
+    device_map="auto"
+)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+system = "You are an expert in OpenFOAM simulation and numerical modeling.Your task is to generate a complete and functional file named: <file_name>controlDict</file_name> within the <folder_name>system</folder_name> directory. Before finalizing the output, ensure: - Ensure units and dimensions are correct** for all physical variables. - Ensure case solver settings are consistent with the user's requirements. Available solvers are: rhoPorousSimpleFoam. Provide only the code—no explanations, comments, or additional text."
+prompt = "User requirement: Perform a compressible flow simulation through an angled duct with porous media using rhoPorousSimpleFoam solver. The geometry consists of a 45-degree angled duct with three sections: inlet (150 length), porous region (100 length), and outlet (100 length), with a width of 50 units and convertToMeters factor of 0.001. Use k-epsilon RAS turbulence model with standard wall functions. Set inlet with turbulent boundary layer profile and mass flow rate of 0.1 kg/s, outlet with fixed pressure of 1e5 Pa, no-slip condition on walls, and slip condition on porous walls. Initial conditions: temperature 293K, pressure 1e5 Pa, zero velocity field, k=1 m²/s², epsilon=200 m²/s³. Physical properties: air with molecular weight 28.9, Cp=1005 J/kgK, dynamic viscosity 1.82e-5 kg/m·s, Prandtl number 0.71. Mesh consists of 15x20x20 cells in inlet section, 20x20x20 in porous section, and 20x20x20 in outlet section. Porous region parameters: Darcy coefficient d=(5e7 -1000 -1000) and Forchheimer coefficient f=(0 0 0), with coordinate system rotated 45 degrees. Use SIMPLE algorithm with 2 U-correctors, relaxation factors: p=0.3, U=0.7, k/epsilon=0.9. Run steady-state simulation for 100 time units with writeInterval of 10 timesteps. Please ensure that the generated file is complete, functional, and logically sound.Additionally, apply your domain expertise to verify that all numerical values are consistent with the user's requirements, maintaining accuracy and coherence.When generating controlDict, do not include anything to preform post processing. Just include the necessary settings to run the simulation."
+messages = [
+    {"role": "system", "content": system},
+    {"role": "user", "content": prompt}
+]
+text = tokenizer.apply_chat_template(
+    messages,
+    tokenize=False,
+    add_generation_prompt=True,
+    enable_thinking=True,
+
+)
+model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
+
+generated_ids = model.generate(
+    **model_inputs,
+    max_new_tokens=1024,
+    temperature=0.6,
+)
+generated_ids = [
+    output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+]
+
+response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+print(response)
 
 #################################################################################
 #################################################################################
