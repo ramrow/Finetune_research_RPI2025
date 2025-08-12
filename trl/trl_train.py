@@ -41,7 +41,7 @@ def tokenize_data(example):
 
 
 ds = (load_dataset("LeoYML/FoamGPT",)).shuffle()
-model="Qwen/Qwen3-Coder-30B-A3B-Instruct"
+model="Qwen/Qwen2.5-Coder-7B"
 new_model = "foamqwen"
 
 # with open("chat_templates/mistral_template.jinja", "r") as f:
