@@ -10,8 +10,10 @@ from transformers import (
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig
 
-os.environ["CUDA_VISIBLE_DEVICES"]="1"
-torch.set_grad_enabled(True)
+# os.environ["CUDA_VISIBLE_DEVICES"]="1"
+# torch.set_grad_enabled(True)
+local_rank = os.getenv("LOCAL_RANK")
+device_string = "cuda:" + str(local_rank)
 
 quant_config = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -44,13 +46,13 @@ ds = (load_dataset("LeoYML/FoamGPT",)).shuffle()
 model="Qwen/Qwen3-Coder-30B-A3B-Instruct"
 new_model = "foamqwen"
 
-# with open("chat_templates/mistral_template.jinja", "r") as f:
-#     chat_template = f.read()
+
 
 md = AutoModelForCausalLM.from_pretrained(
     model,
     quantization_config=quant_config,
-    device_map="auto",
+    # device_map="auto",
+    device_map={'':device_string},
     trust_remote_code=True,
     torch_dtype=torch.bfloat16,
 )
