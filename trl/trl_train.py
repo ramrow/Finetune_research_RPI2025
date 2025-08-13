@@ -43,7 +43,7 @@ def tokenize_data(example):
 
 
 ds = (load_dataset("LeoYML/FoamGPT",)).shuffle()
-model="Qwen/Qwen3-Coder-30B-A3B-Instruct"
+model="Qwen/Qwen2.5-Coder-7B"
 new_model = "foamqwen"
 
 
@@ -96,8 +96,8 @@ training_args = SFTConfig(
     logging_steps=25,
     learning_rate=3e-4,
     weight_decay=0.001,
-    fp16=True,
-    bf16=False,
+    fp16=False,
+    bf16=True,
     max_grad_norm=0.3,
     max_steps=-1,
     warmup_ratio=0.03,
