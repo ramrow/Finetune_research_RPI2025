@@ -39,7 +39,7 @@ for index, row in ds.iterrows():
     generated_ids = model.generate(
         **model_inputs,
         max_new_tokens=32768,
-        temperature=1,
+        temperature=0.7,
     )
     output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
 
