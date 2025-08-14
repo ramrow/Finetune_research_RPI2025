@@ -22,6 +22,7 @@ model = AutoModelForCausalLM.from_pretrained(
 ds = pd.read_csv("bernard.csv",)
 code_content = []
 for index, row in ds.iterrows():
+    print(index)
     user = row.user_prompt
     system = row.system_prompt
     messages = [
