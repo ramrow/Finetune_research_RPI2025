@@ -43,7 +43,7 @@ def tokenize_data(example):
 
 
 ds = (load_dataset("LeoYML/FoamGPT",)).shuffle()
-model="Qwen/Qwen3-30B-A3B-Instruct-2507"
+model="Qwen/Qwen3-14B"
 new_model = "foamqwen"
 
 
