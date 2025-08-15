@@ -43,8 +43,8 @@ def tokenize_data(example):
 
 
 ds = (load_dataset("LeoYML/FoamGPT",)).shuffle()
-model="Qwen/Qwen2.5-Coder-14B-Instruct"
-new_model = "foamqwen"
+model="mistralai/Mistral-Small-3.1-24B-Instruct-2503"
+new_model = "foammistral"
 
 
 
@@ -83,10 +83,10 @@ peft_params = LoraConfig(
 )
 
 training_args = SFTConfig(
-    output_dir="foamqwen",
+    output_dir="foammistral",
     # resume_from_checkpoint="./qwen_results/checkpoint-",
     # compute loss every few steps 1.5k/step
-    num_train_epochs=4,
+    num_train_epochs=6,
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=4, 
