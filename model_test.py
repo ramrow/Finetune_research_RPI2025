@@ -10,53 +10,74 @@ import torch
 import os
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+model_id = "finalform/foamGss-20B-trl"
 
-model_name = "finalform/foamQwen2.5-7B-Coder-trl"
-
-# load the tokenizer and the model
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(
-    model_name,
+pipe = pipeline(
+    "text-generation",
+    model=model_id,
     torch_dtype="auto",
-    device_map="auto"
+    device_map="auto",
 )
 
-# prepare the model input
 system = "You are an expert in OpenFOAM simulation and numerical modeling.Your task is to generate a complete and functional file named: <file_name>alphat</file_name> within the <folder_name>0</folder_name> directory. Before finalizing the output, ensure: - Ensure units and dimensions are correct** for all physical variables. - Ensure case solver settings are consistent with the user's requirements. Available solvers are: buoyantFoam. Provide only the code—no explanations, comments, or additional text."
 prompt = "User requirement: Perform a buoyant thermal convection simulation using buoyantFoam solver for Bernard cells formation. The domain is a rectangular channel with dimensions 9x1x2 units (convertToMeters=1). The mesh consists of 90x10x1 cells with uniform grading. Set floor temperature to 301K and ceiling temperature to 300K, with zero gradient temperature boundary conditions on sidewalls. Initial temperature field is uniform 300K. Use Boussinesq approximation for fluid properties with reference density rho0=1 kg/m³ at T0=300K and thermal expansion coefficient beta=1e-3 K⁻¹. Set fluid properties: kinematic viscosity=1e-3 m²/s, specific heat capacity Cv=712 J/kgK, and Prandtl number Pr=1. Apply no-slip conditions on all walls. Initial velocity field is (1e-4, 0, 0) m/s. Use PIMPLE algorithm with 2 correctors and no momentum predictor. Gravity acts in negative y-direction with g=-9.81 m/s². Run simulation from t=0 to t=1000s with deltaT=1s and write results every 50s. Use kEpsilon turbulence model with initial k=1e-5 m²/s² and epsilon=1e-5 m²/s³. The front and back faces are set as empty boundary conditions for 2D simulation. Include streamline calculation from point (0, 0.5, 0) to (9, 0.5, 0) with 24 points for flow visualization. Please ensure that the generated file is complete, functional, and logically sound.Additionally, apply your domain expertise to verify that all numerical values are consistent with the user's requirements, maintaining accuracy and coherence.When generating controlDict, do not include anything to preform post processing. Just include the necessary settings to run the simulation."
 messages = [
     {"role": "system", "content": system},
     {"role": "user", "content": prompt}
 ]
-text = tokenizer.apply_chat_template(
+
+outputs = pipe(
     messages,
-    tokenize=False,
-    add_generation_prompt=True,
-    enable_thinking=True # Switches between thinking and non-thinking modes. Default is True.
+    max_new_tokens=256,
 )
-model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
+print(outputs[0]["generated_text"][-1])
 
-# conduct text completion
-generated_ids = model.generate(
-    **model_inputs,
-    max_new_tokens=32768,
-    temperature=1,
-)
-output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
+# model_name = "finalform/foamQwen2.5-7B-Coder-trl"
 
-# parsing thinking content
-try:
-    # rindex finding 151668 (</think>)
-    index = len(output_ids) - output_ids[::-1].index(151668)
-except ValueError:
-    index = 0
+# # load the tokenizer and the model
+# tokenizer = AutoTokenizer.from_pretrained(model_name)
+# model = AutoModelForCausalLM.from_pretrained(
+#     model_name,
+#     torch_dtype="auto",
+#     device_map="auto"
+# )
 
-thinking_content = tokenizer.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
-content = tokenizer.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
+# # prepare the model input
+# system = "You are an expert in OpenFOAM simulation and numerical modeling.Your task is to generate a complete and functional file named: <file_name>alphat</file_name> within the <folder_name>0</folder_name> directory. Before finalizing the output, ensure: - Ensure units and dimensions are correct** for all physical variables. - Ensure case solver settings are consistent with the user's requirements. Available solvers are: buoyantFoam. Provide only the code—no explanations, comments, or additional text."
+# prompt = "User requirement: Perform a buoyant thermal convection simulation using buoyantFoam solver for Bernard cells formation. The domain is a rectangular channel with dimensions 9x1x2 units (convertToMeters=1). The mesh consists of 90x10x1 cells with uniform grading. Set floor temperature to 301K and ceiling temperature to 300K, with zero gradient temperature boundary conditions on sidewalls. Initial temperature field is uniform 300K. Use Boussinesq approximation for fluid properties with reference density rho0=1 kg/m³ at T0=300K and thermal expansion coefficient beta=1e-3 K⁻¹. Set fluid properties: kinematic viscosity=1e-3 m²/s, specific heat capacity Cv=712 J/kgK, and Prandtl number Pr=1. Apply no-slip conditions on all walls. Initial velocity field is (1e-4, 0, 0) m/s. Use PIMPLE algorithm with 2 correctors and no momentum predictor. Gravity acts in negative y-direction with g=-9.81 m/s². Run simulation from t=0 to t=1000s with deltaT=1s and write results every 50s. Use kEpsilon turbulence model with initial k=1e-5 m²/s² and epsilon=1e-5 m²/s³. The front and back faces are set as empty boundary conditions for 2D simulation. Include streamline calculation from point (0, 0.5, 0) to (9, 0.5, 0) with 24 points for flow visualization. Please ensure that the generated file is complete, functional, and logically sound.Additionally, apply your domain expertise to verify that all numerical values are consistent with the user's requirements, maintaining accuracy and coherence.When generating controlDict, do not include anything to preform post processing. Just include the necessary settings to run the simulation."
+# messages = [
+#     {"role": "system", "content": system},
+#     {"role": "user", "content": prompt}
+# ]
+# text = tokenizer.apply_chat_template(
+#     messages,
+#     tokenize=False,
+#     add_generation_prompt=True,
+#     enable_thinking=True # Switches between thinking and non-thinking modes. Default is True.
+# )
+# model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
-# print("thinking content:", thinking_content)
-print( thinking_content)
-print( content)
+# # conduct text completion
+# generated_ids = model.generate(
+#     **model_inputs,
+#     max_new_tokens=32768,
+#     temperature=1,
+# )
+# output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
+
+# # parsing thinking content
+# try:
+#     # rindex finding 151668 (</think>)
+#     index = len(output_ids) - output_ids[::-1].index(151668)
+# except ValueError:
+#     index = 0
+
+# thinking_content = tokenizer.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
+# content = tokenizer.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
+
+# # print("thinking content:", thinking_content)
+# print( thinking_content)
+# print( content)
 
 #################################################################################
 #################################################################################
