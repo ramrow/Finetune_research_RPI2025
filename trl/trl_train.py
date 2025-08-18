@@ -87,7 +87,7 @@ training_args = SFTConfig(
     output_dir="foamqwen",
     # resume_from_checkpoint="./qwen_results/checkpoint-",
     # compute loss every few steps 1.5k/step
-    num_train_epochs=15,
+    num_train_epochs=7,
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=4, 
@@ -96,7 +96,7 @@ training_args = SFTConfig(
     # save_steps=750,
     logging_steps=25,
     learning_rate=3e-4,
-    weight_decay=0.001,
+    weight_decay=0.01,
     fp16=False,
     bf16=True,
     max_grad_norm=0.3,
@@ -106,7 +106,6 @@ training_args = SFTConfig(
     lr_scheduler_type="cosine",
     report_to="tensorboard",
     packing=False,
-    metric_for_best_model = 'f1',
     eval_strategy="epoch",
     save_strategy="epoch",
 )
@@ -119,7 +118,6 @@ trainer = SFTTrainer(
     eval_dataset=tokenized_test_ds,
     args=training_args,
     processing_class=tokenizer,
-    callbacks = [EarlyStoppingCallback(early_stopping_patience=3)],
 )
 
 trainer.train()
