@@ -106,6 +106,7 @@ training_args = SFTConfig(
     lr_scheduler_type="cosine",
     report_to="tensorboard",
     packing=False,
+    metric_for_best_model = 'f1',
     eval_strategy="epoch",
     save_strategy="epoch",
 )
