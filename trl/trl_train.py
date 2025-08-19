@@ -11,7 +11,7 @@ from transformers import (
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig
 
-os.environ["CUDA_VISIBLE_DEVICES"]="1"
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
 torch.set_grad_enabled(True)
 # local_rank = os.getenv("LOCAL_RANK")
 # device_string = "cuda:" + str(local_rank)
