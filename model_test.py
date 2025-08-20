@@ -27,7 +27,7 @@ model = AutoModelForCausalLM.from_pretrained(
 with open("system_prompt.txt", 'r') as file:
     system = file.read()
 
-with open("no-similarcase.txt", 'r') as file:
+with open("similarcase.txt", 'r') as file:
     prompt = file.read()
 messages = [
     {"role": "system", "content": system},
