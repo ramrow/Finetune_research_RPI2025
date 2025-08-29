@@ -22,9 +22,9 @@ quant_config = BitsAndBytesConfig(
 
 
 ds = (load_dataset("YYgroup/NL2FOAM",)).shuffle()
+ds = ds.train_test_split(0.1)
 model="YYgroup/AutoCFD-7B"
 
-print(ds['train'])
 
 md = AutoModelForCausalLM.from_pretrained(
     model,
@@ -57,7 +57,7 @@ tokenizer.return_tensors = "pt"
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
-train_ds = ds['train'].map(tokenize_data)
+train_ds = ds['test'].map(tokenize_data)
 data = train_ds.remove_columns(['case_path', 'rel_path', 'mesh_path', 'description', 'mesh_content', 'foamfiles', 'file_tree', 'allrun', 'patch_names', 'instruction', 'input', 'output'])
 
 peft_params = LoraConfig(
