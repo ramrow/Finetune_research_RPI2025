@@ -34,18 +34,29 @@ md = AutoModelForCausalLM.from_pretrained(
     torch_dtype=torch.bfloat16,
 )
 
-def tokenize_data(example):
-    inputs = tokenizer(example['description'], padding=True, max_length=2048, truncation=True, return_tensors="pt")
-    outputs = tokenizer(example['foamfiles'], padding=True, max_length=2048, truncation=True, return_tensors="pt")
-
-
-    tokens = {
-        'input_ids': inputs['input_ids'],
-        'attention_mask': inputs['attention_mask'],
-        'labels': outputs['input_ids'],
-        }
-
+def apply_chat_template(example):
+    messages = [
+        {"role": "user", "content": example['description']},
+        {"role": "assistant", "content": example["foamfiles"]}
+    ]
+    prompt = tokenizer.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
+    tokens = tokenizer(prompt, padding="longest",)
+    # tokens = tokenizer(example['text'], padding="max_length", max_length=1028, truncation=True)
+    tokens['labels'] = [
+        -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
+    ]
     return tokens
+    # return {"text": prompt}
+
+# def tokenize_data(example):
+#     tokens = tokenizer(example['text'], padding="longest",)
+#     # tokens = tokenizer(example['text'], padding="max_length", max_length=1028, truncation=True)
+#     tokens['labels'] = [
+#         -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
+#     ]
+#     return tokens
 
     # outputs['input_ids'] = [
     #     -100 if token == tokenizer.pad_token_id else token for token in inputs['input_ids']
@@ -59,7 +70,7 @@ tokenizer.return_tensors = "pt"
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
-train_ds = ds['test'].map(tokenize_data)
+train_ds = ds['test'].map(apply_chat_template)
 data = train_ds.remove_columns(['case_path', 'rel_path', 'mesh_path', 'description', 'mesh_content', 'foamfiles', 'file_tree', 'allrun', 'patch_names', 'instruction', 'input', 'output'])
 
 peft_params = LoraConfig(
