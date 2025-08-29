@@ -22,7 +22,7 @@ quant_config = BitsAndBytesConfig(
 
 
 ds = (load_dataset("YYgroup/NL2FOAM",)).shuffle()
-ds = ds.train_test_split(0.1)
+ds = ds.train_test_split(test_size=0.1)
 model="YYgroup/AutoCFD-7B"
 
 
