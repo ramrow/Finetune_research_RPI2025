@@ -41,6 +41,7 @@ def tokenize_data(example):
         'input_ids': inputs['input_ids'],
         'labels': outputs['input_ids']
         }
+    print(tokens)
     tokens['labels'] = [
         -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
     ]
