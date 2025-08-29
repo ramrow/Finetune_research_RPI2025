@@ -36,7 +36,6 @@ md = AutoModelForCausalLM.from_pretrained(
 
 def tokenize_data(example):
     inputs = tokenizer(example['description'], padding="max_length", truncation=True, return_tensors="pt")
-    print(inputs['input_ids'])
     outputs = tokenizer(example['foamfiles'], padding="max_length", truncation=True, return_tensors="pt")
     tokens = {
         'input_ids': inputs['input_ids'],
