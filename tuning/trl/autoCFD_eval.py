@@ -22,7 +22,7 @@ quant_config = BitsAndBytesConfig(
 
 
 ds = (load_dataset("YYgroup/NL2FOAM",split="train")).shuffle()
-ds = ds.train_test_split(test_size=0.1)
+# ds = ds.train_test_split(test_size=0.1)
 model="YYgroup/AutoCFD-7B"
 
 
@@ -70,7 +70,7 @@ tokenizer.return_tensors = "pt"
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
-train_ds = ds['test'].map(apply_chat_template)
+train_ds = ds['train'].map(apply_chat_template)
 data = train_ds.remove_columns(['case_path', 'rel_path', 'mesh_path', 'description', 'mesh_content', 'foamfiles', 'file_tree', 'allrun', 'patch_names', 'instruction', 'input', 'output'])
 
 peft_params = LoraConfig(
