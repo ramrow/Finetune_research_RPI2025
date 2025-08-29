@@ -37,18 +37,19 @@ md = AutoModelForCausalLM.from_pretrained(
 def tokenize_data(example):
     inputs = tokenizer(example['description'], padding="max_length", truncation=True, return_tensors="pt")
     outputs = tokenizer(example['foamfiles'], padding="max_length", truncation=True, return_tensors="pt")
-    print(len(inputs['input_ids']))
-    print(len(outputs['input_ids']))
-    # outputs['input_ids'] = [
-    #     -100 if token == tokenizer.pad_token_id else token for token in inputs['input_ids']
-    # ]
+
 
     tokens = {
         'input_ids': inputs['input_ids'],
-        'labels': outputs['input_ids']
+        'attention_mask': inputs['attention_mask'],
+        'labels': outputs['input_ids'],
         }
 
     return tokens
+
+    # outputs['input_ids'] = [
+    #     -100 if token == tokenizer.pad_token_id else token for token in inputs['input_ids']
+    # ]
 
 md.config.use_cache = False
 md.config.pretraining_tp = 1
