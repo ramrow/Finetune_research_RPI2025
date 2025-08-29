@@ -35,8 +35,8 @@ md = AutoModelForCausalLM.from_pretrained(
 )
 
 def tokenize_data(example):
-    inputs = tokenizer(example['description'], padding="max_length", truncation=True, return_tensors="pt")
-    outputs = tokenizer(example['foamfiles'], padding="max_length", truncation=True, return_tensors="pt")
+    inputs = tokenizer(example['description'], padding=True, max_length=2048, truncation=True, return_tensors="pt")
+    outputs = tokenizer(example['foamfiles'], padding=True, max_length=2048, truncation=True, return_tensors="pt")
 
 
     tokens = {
@@ -92,8 +92,8 @@ training_args = SFTConfig(
     lr_scheduler_type="cosine",
     report_to="tensorboard",
     packing=False,
-    eval_strategy="epoch",
-    save_strategy="epoch",
+    # eval_strategy="epoch",
+    # save_strategy="epoch",
 )
 
 peft_md = get_peft_model(md, peft_params)
