@@ -43,9 +43,9 @@ def tokenize_data(example):
         'labels': outputs['input_ids']
         }
     print(tokens)
-    tokens['labels'] = [
-        -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
-    ]
+    # tokens['labels'] = [
+    #     -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
+    # ]
     return tokens
 
 md.config.use_cache = False
