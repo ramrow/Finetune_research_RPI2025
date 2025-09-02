@@ -1,17 +1,17 @@
-User requirement: Perform a 3D Bernard Cell simulation using OpenFOAM buoyantFoam solver. The computational domain spans 9 m x 1 m x 2 m. The simulation begins at t=0 seconds and runs until t=1000 seconds with a time step of 1 second, and results are written at intervals of every 50 seconds. One wall has a temperature of 301 K, while the other has a temperature of 300 K.
+User requirement: do a Reynolds-Averaged Simulation (RAS) pitzdaily simulation. Use PIMPLE algorithm. The domain is a 2D millimeter-scale channel geometry. Boundary conditions specify a fixed velocity of 10m/s at the inlet (left),zero gradient pressure at the outlet (right), and no-slip conditions for walls. Use timestep of 0.0001 and output every 0.01. Finaltime is 0.3. use nu value of 1e-5.
 Refer to the following similar case file content to ensure the generated file aligns with the user requirement:
 <similar_case_reference><index>
-case name: BernardCells
-case domain: heatTransfer
-case category: None
-case solver: buoyantFoam
+case name: pitzDaily
+case domain: incompressible
+case category: RAS
+case solver: pimpleFoam
 </index>
 
 
 <directory_structure>
-<dir>directory name: 0. File names in this directory: [k, epsilon, nut, U, alphat, p, p_rgh, T]</dir>
-<dir>directory name: system. File names in this directory: [fvSolution, blockMeshDict, fvSchemes, controlDict]</dir>
-<dir>directory name: constant. File names in this directory: [momentumTransport, physicalProperties, g]</dir>
+<dir>directory name: 0. File names in this directory: [k, epsilon, nut, U, nuTilda, p]</dir>
+<dir>directory name: system. File names in this directory: [fvSolution, fvSchemes, controlDict]</dir>
+<dir>directory name: constant. File names in this directory: [momentumTransport, physicalProperties]</dir>
 </directory_structure>
 
 
@@ -23,23 +23,40 @@ FoamFile
 {
     format      ascii;
     class       volScalarField;
+    location    "0";
     object      k;
 }
 
 
 dimensions      [0 2 -2 0 0 0 0];
 
-internalField   uniform 1e-5;
+internalField   uniform 0.375;
 
 boundaryField
 {
-    wall
+    inlet
+    {
+        type            fixedValue;
+        value           uniform 0.375;
+    }
+    outlet
+    {
+        type            zeroGradient;
+    }
+    upperWall
     {
         type            kqRWallFunction;
-        value           $internalField;
+        value           uniform 0.375;
     }
-
-    #includeEtc "caseDicts/setConstraintTypes"
+    lowerWall
+    {
+        type            kqRWallFunction;
+        value           uniform 0.375;
+    }
+    frontAndBack
+    {
+        type            empty;
+    }
 }
 
 
@@ -53,23 +70,40 @@ FoamFile
 {
     format      ascii;
     class       volScalarField;
+    location    "0";
     object      epsilon;
 }
 
 
 dimensions      [0 2 -3 0 0 0 0];
 
-internalField   uniform 1e-5;
+internalField   uniform 14.855;
 
 boundaryField
 {
-    wall
+    inlet
+    {
+        type            fixedValue;
+        value           uniform 14.855;
+    }
+    outlet
+    {
+        type            zeroGradient;
+    }
+    upperWall
     {
         type            epsilonWallFunction;
-        value           $internalField;
+        value           uniform 14.855;
     }
-
-    #includeEtc "caseDicts/setConstraintTypes"
+    lowerWall
+    {
+        type            epsilonWallFunction;
+        value           uniform 14.855;
+    }
+    frontAndBack
+    {
+        type            empty;
+    }
 }
 
 
@@ -83,6 +117,7 @@ FoamFile
 {
     format      ascii;
     class       volScalarField;
+    location    "0";
     object      nut;
 }
 
@@ -93,13 +128,30 @@ internalField   uniform 0;
 
 boundaryField
 {
-    wall
+    inlet
+    {
+        type            calculated;
+        value           uniform 0;
+    }
+    outlet
+    {
+        type            calculated;
+        value           uniform 0;
+    }
+    upperWall
     {
         type            nutkWallFunction;
-        value           $internalField;
+        value           uniform 0;
     }
-
-    #includeEtc "caseDicts/setConstraintTypes"
+    lowerWall
+    {
+        type            nutkWallFunction;
+        value           uniform 0;
+    }
+    frontAndBack
+    {
+        type            empty;
+    }
 }
 
 
@@ -119,48 +171,83 @@ FoamFile
 
 dimensions      [0 1 -1 0 0 0 0];
 
-internalField   uniform (1e-4 0 0);
+internalField   uniform (0 0 0);
 
 boundaryField
 {
-    wall
+    inlet
+    {
+        type            fixedValue;
+        value           uniform (10 0 0);
+    }
+
+    outlet
+    {
+        type            zeroGradient;
+    }
+
+    upperWall
     {
         type            noSlip;
     }
 
-    #includeEtc "caseDicts/setConstraintTypes"
+    lowerWall
+    {
+        type            noSlip;
+    }
+
+    frontAndBack
+    {
+        type            empty;
+    }
 }
 
 
 </file_content>
 </file_end>
 
-<file_begin>file name: alphat
+<file_begin>file name: nuTilda
 <file_content>
 FoamFile
 {
     format      ascii;
     class       volScalarField;
-    object      alphat;
+    object      nuTilda;
 }
 
 
-dimensions      [1 -1 -1 0 0 0 0];
+dimensions      [0 2 -1 0 0 0 0];
 
 internalField   uniform 0;
 
 boundaryField
 {
-    wall
+    inlet
     {
-        type            compressible::alphatJayatillekeWallFunction;
-        Prt             0.85;
-        value           $internalField;
+        type            fixedValue;
+        value           uniform 0;
     }
 
-    #includeEtc "caseDicts/setConstraintTypes"
-}
+    outlet
+    {
+        type            zeroGradient;
+    }
 
+    upperWall
+    {
+        type            zeroGradient;
+    }
+
+    lowerWall
+    {
+        type            zeroGradient;
+    }
+
+    frontAndBack
+    {
+        type            empty;
+    }
+}
 
 
 </file_content>
@@ -176,86 +263,37 @@ FoamFile
 }
 
 
-dimensions      [1 -1 -2 0 0 0 0];
+dimensions      [0 2 -2 0 0 0 0];
 
 internalField   uniform 0;
 
 boundaryField
 {
-    wall
-    {
-        type            calculated;
-        value           $internalField;
-    }
-
-    #includeEtc "caseDicts/setConstraintTypes"
-}
-
-
-</file_content>
-</file_end>
-
-<file_begin>file name: p_rgh
-<file_content>
-FoamFile
-{
-    format      ascii;
-    class       volScalarField;
-    object      p_rgh;
-}
-
-
-dimensions      [1 -1 -2 0 0 0 0];
-
-internalField   uniform 0;
-
-boundaryField
-{
-    wall
-    {
-        type            fixedFluxPressure;
-        value           $internalField;
-    }
-
-    #includeEtc "caseDicts/setConstraintTypes"
-}
-
-
-</file_content>
-</file_end>
-
-<file_begin>file name: T
-<file_content>
-FoamFile
-{
-    format      ascii;
-    class       volScalarField;
-    object      T;
-}
-
-
-dimensions      [0 0 0 1 0 0 0];
-
-internalField   uniform 300;
-
-boundaryField
-{
-    floor
-    {
-        type            fixedValue;
-        value           uniform 301;
-    }
-    ceiling
-    {
-        type            fixedValue;
-        value           uniform 300;
-    }
-    sideWalls
+    inlet
     {
         type            zeroGradient;
     }
 
-    #includeEtc "caseDicts/setConstraintTypes"
+    outlet
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+
+    upperWall
+    {
+        type            zeroGradient;
+    }
+
+    lowerWall
+    {
+        type            zeroGradient;
+    }
+
+    frontAndBack
+    {
+        type            empty;
+    }
 }
 
 
@@ -278,133 +316,42 @@ FoamFile
 
 solvers
 {
-    "rho.*"
+    p
     {
-        solver          diagonal;
+        solver           GAMG;
+        tolerance        1e-7;
+        relTol           0.01;
+
+        smoother         DICGaussSeidel;
+
     }
 
-    p_rgh
+    pFinal
     {
-        solver          GAMG;
-        smoother        DIC;
-        tolerance       1e-8;
-        relTol          0.01;
-    }
-
-    p_rghFinal
-    {
-        $p_rgh;
+        $p;
         relTol          0;
     }
 
-    "(U|e|k|epsilon)"
+    "(U|k|epsilon)"
     {
-        solver          PBiCGStab;
-        preconditioner  DILU;
-        tolerance       1e-8;
-        relTol          0.01;
+        solver          smoothSolver;
+        smoother        symGaussSeidel;
+        tolerance       1e-05;
+        relTol          0.1;
     }
 
-    "(U|e|k|epsilon)Final"
+    "(U|k|epsilon)Final"
     {
         $U;
         relTol          0;
     }
-
 }
 
 PIMPLE
 {
-    momentumPredictor no;
     nNonOrthogonalCorrectors 0;
-    nCorrectors       2;
-
-    pRefCell          0;
-    pRefValue         0;
+    nCorrectors         2;
 }
-
-relaxationFactors
-{
-    equations
-    {
-        ".*"   1.0;
-    }
-}
-
-
-
-</file_content>
-</file_end>
-
-<file_begin>file name: blockMeshDict
-<file_content>
-FoamFile
-{
-    format      ascii;
-    class       dictionary;
-    object      blockMeshDict;
-}
-
-
-convertToMeters 1;
-
-vertices
-(
-    (0 0 -1)
-    (9 0 -1)
-    (9 1 -1)
-    (0 1 -1)
-    (0 0 1)
-    (9 0 1)
-    (9 1 1)
-    (0 1 1)
-);
-
-blocks
-(
-    hex (0 1 2 3 4 5 6 7) (90 10 1) simpleGrading (1 1 1)
-);
-
-boundary
-(
-    floor
-    {
-        type wall;
-        faces
-        (
-            (1 5 4 0)
-        );
-    }
-
-    ceiling
-    {
-        type wall;
-        faces
-        (
-            (3 7 6 2)
-        );
-    }
-
-    sideWalls
-    {
-        type wall;
-        faces
-        (
-            (0 4 7 3)
-            (2 6 5 1)
-        );
-    }
-
-    frontAndBack
-    {
-        type empty;
-        faces
-        (
-            (0 3 2 1)
-            (4 5 6 7)
-        );
-    }
-);
 
 
 
@@ -437,16 +384,13 @@ divSchemes
     default             none;
 
     div(phi,U)          Gauss linearUpwind grad(U);
-    div(phi,e)          Gauss limitedLinear 1;
+    div(phi,k)          Gauss upwind;
+    div(phi,epsilon)    Gauss upwind;
+    div(phi,R)          Gauss upwind;
+    div(R)              Gauss linear;
+    div(phi,nuTilda)    Gauss upwind;
 
-    turbulence          Gauss limitedLinear 1;
-    div(phi,k)          $turbulence;
-    div(phi,epsilon)    $turbulence;
-
-    div(phi,(p|rho))    Gauss limitedLinear 1;
-    div(phi,K)          Gauss linear;
-
-    div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
+    div((nuEff*dev2(T(grad(U))))) Gauss linear;
 }
 
 laplacianSchemes
@@ -480,7 +424,7 @@ FoamFile
 }
 
 
-application     buoyantFoam;
+application     pimpleFoam;
 
 startFrom       latestTime;
 
@@ -488,17 +432,17 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         1000;
+endTime         0.3;
 
-deltaT          1;
+deltaT          0.0001;
 
-writeControl    runTime;
+writeControl    adjustableRunTime;
 
-writeInterval   50;
+writeInterval   0.01;
 
 purgeWrite      0;
 
-writeFormat     binary;
+writeFormat     ascii;
 
 writePrecision  6;
 
@@ -508,12 +452,15 @@ timeFormat      general;
 
 timePrecision   6;
 
-runTimeModifiable true;
+runTimeModifiable yes;
+
+adjustTimeStep  yes;
+
+maxCo           5;
 
 functions
 {
-    #includeFunc residuals(p_rgh)
-    #includeFunc streamlinesLine(funcName=streamlines, start=(0 0.5 0), end=(9 0.5 0), nPoints=24, U)
+    #includeFunc patchAverage(patch=inlet, fields=(p U))
 }
 
 
@@ -534,7 +481,7 @@ FoamFile
 }
 
 
-simulationType laminar;
+simulationType RAS;
 
 RAS
 {
@@ -544,7 +491,6 @@ RAS
 
     printCoeffs     on;
 }
-
 
 
 </file_content>
@@ -561,60 +507,9 @@ FoamFile
 }
 
 
-thermoType
-{
-    type            heRhoThermo;
-    mixture         pureMixture;
-    transport       const;
-    thermo          eConst;
-    equationOfState Boussinesq;
-    specie          specie;
-    energy          sensibleInternalEnergy;
-}
+viscosityModel  constant;
 
-mixture
-{
-    specie
-    {
-        molWeight       18;
-    }
-    equationOfState
-    {
-        rho0            1;
-        T0              300;
-        beta            1e-03;
-    }
-    thermodynamics
-    {
-        Cv              712;
-        Hf              0;
-    }
-    transport
-    {
-        mu              1e-03;
-        Pr              1;
-    }
-}
-
-
-
-</file_content>
-</file_end>
-
-<file_begin>file name: g
-<file_content>
-FoamFile
-{
-    format      ascii;
-    class       uniformDimensionedVectorField;
-    location    "constant";
-    object      g;
-}
-
-
-dimensions      [0 1 -2 0 0 0 0];
-value           (0 -9.81 0);
-
+nu              [0 2 -1 0 0 0 0] 1e-05;
 
 
 </file_content>
