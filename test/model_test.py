@@ -11,7 +11,7 @@ import os
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-model_name = "finalform/foamQwen2.5-7B-Instruct-trl"
+model_name = "finalform/foamqwen"
 
 # load the tokenizer and the model
 tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -44,7 +44,7 @@ model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 # conduct text completion
 generated_ids = model.generate(
     **model_inputs,
-    max_new_tokens=32768//4,
+    max_new_tokens=32768,
     temperature=1,
 )
 output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
