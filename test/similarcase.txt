@@ -1,164 +1,178 @@
-User requirement: Perform a 3D Bernard Cell simulation using OpenFOAM buoyantFoam solver. The computational domain spans 9 m x 1 m x 2 m. The simulation begins at t=0 seconds and runs until t=1000 seconds with a time step of 1 second, and results are written at intervals of every 50 seconds. One wall has a temperature of 301 K, while the other has a temperature of 300 K.
+User requirement: do a laminar offsetcylinder simulation. Use PIMPLE algorithm with a generalized Newtonian model and Cross-Power-Law viscosity for momentum transport, characterized by specific parameters nuInf=10, m=0.4, n=3. Boundary conditions specify a fixed velocity of 1m/s at the inlet (left),zero gradient pressure at the outlet (right), and no-slip conditions for walls, including the cylinder surface. Use timestep of 0.0025 and output every 0.05. Finaltime is 0.5. use constant viscosity model with nu value of 0.01 in physical properties.
 Refer to the following similar case file content to ensure the generated file aligns with the user requirement:
 <similar_case_reference><index>
-case name: BernardCells
-case domain: heatTransfer
-case category: None
-case solver: buoyantFoam
+case name: cylinder
+case domain: multiphase
+case category: laminar
+case solver: compressibleInterFoam
 </index>
 
 
 <directory_structure>
-<dir>directory name: 0. File names in this directory: [k, epsilon, nut, U, alphat, p, p_rgh, T]</dir>
-<dir>directory name: system. File names in this directory: [fvSolution, blockMeshDict, fvSchemes, controlDict]</dir>
-<dir>directory name: constant. File names in this directory: [momentumTransport, physicalProperties, g]</dir>
+<dir>directory name: 0. File names in this directory: [U, T.air, alpha.liquid, T.liquid, p, p_rgh, T]</dir>
+<dir>directory name: system. File names in this directory: [fvSolution, topoSetDict, decomposeParDict, blockMeshDict, extrudeToRegionMeshDict, fvSchemes, controlDict]</dir>
+<dir>directory name: constant. File names in this directory: [cloudProperties, physicalProperties.liquid, fvModels, parcelInjectionProperties, momentumTransport, surfaceFilmProperties, combustionProperties, speciesThermo, physicalProperties.air, phaseProperties, g]</dir>
 </directory_structure>
 
 
 <tutorials>
 <directory_begin>directory name: 0
-<file_begin>file name: k
-<file_content>
-FoamFile
-{
-    format      ascii;
-    class       volScalarField;
-    object      k;
-}
-
-
-dimensions      [0 2 -2 0 0 0 0];
-
-internalField   uniform 1e-5;
-
-boundaryField
-{
-    wall
-    {
-        type            kqRWallFunction;
-        value           $internalField;
-    }
-
-    #includeEtc "caseDicts/setConstraintTypes"
-}
-
-
-
-</file_content>
-</file_end>
-
-<file_begin>file name: epsilon
-<file_content>
-FoamFile
-{
-    format      ascii;
-    class       volScalarField;
-    object      epsilon;
-}
-
-
-dimensions      [0 2 -3 0 0 0 0];
-
-internalField   uniform 1e-5;
-
-boundaryField
-{
-    wall
-    {
-        type            epsilonWallFunction;
-        value           $internalField;
-    }
-
-    #includeEtc "caseDicts/setConstraintTypes"
-}
-
-
-
-</file_content>
-</file_end>
-
-<file_begin>file name: nut
-<file_content>
-FoamFile
-{
-    format      ascii;
-    class       volScalarField;
-    object      nut;
-}
-
-
-dimensions      [0 2 -1 0 0 0 0];
-
-internalField   uniform 0;
-
-boundaryField
-{
-    wall
-    {
-        type            nutkWallFunction;
-        value           $internalField;
-    }
-
-    #includeEtc "caseDicts/setConstraintTypes"
-}
-
-
-
-</file_content>
-</file_end>
-
 <file_begin>file name: U
 <file_content>
 FoamFile
 {
     format      ascii;
     class       volVectorField;
+    location    "0";
     object      U;
 }
 
 
 dimensions      [0 1 -1 0 0 0 0];
 
-internalField   uniform (1e-4 0 0);
+internalField   uniform (0 0 0);
 
 boundaryField
 {
-    wall
+    "(sides|frontAndBack)"
     {
         type            noSlip;
     }
 
-    #includeEtc "caseDicts/setConstraintTypes"
+    top
+    {
+        type            pressureInletOutletVelocity;
+        value           $internalField;
+    }
+
+    region0_to_wallFilmRegion_wallFilmFaces
+    {
+        type            noSlip;
+    }
+}
+
+
+
+</file_content>
+</file_end>
+
+<file_begin>file name: T.air
+<file_content>
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      T.air;
+}
+
+
+dimensions      [0 0 0 1 0 0 0];
+
+internalField   uniform 300;
+
+boundaryField
+{
+    sides
+    {
+        type            calculated;
+        value           uniform 300;
+    }
+    top
+    {
+        type            calculated;
+        value           uniform 300;
+    }
+    frontAndBack
+    {
+        type            calculated;
+        value           uniform 300;
+    }
+    region0_to_wallFilmRegion_wallFilmFaces
+    {
+        type            calculated;
+        value           uniform 300;
+    }
+}
+
+
+
+</file_content>
+</file_end>
+
+<file_begin>file name: alpha.liquid
+<file_content>
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    object      alpha.liquid;
+}
+
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    "(sides|frontAndBack)"
+    {
+        type            zeroGradient;
+    }
+
+    top
+    {
+        type            zeroGradient;
+    }
+
+    region0_to_wallFilmRegion_wallFilmFaces
+    {
+        type            zeroGradient;
+    }
 }
 
 
 </file_content>
 </file_end>
 
-<file_begin>file name: alphat
+<file_begin>file name: T.liquid
 <file_content>
 FoamFile
 {
     format      ascii;
     class       volScalarField;
-    object      alphat;
+    location    "0";
+    object      T.liquid;
 }
 
 
-dimensions      [1 -1 -1 0 0 0 0];
+dimensions      [0 0 0 1 0 0 0];
 
-internalField   uniform 0;
+internalField   uniform 300;
 
 boundaryField
 {
-    wall
+    sides
     {
-        type            compressible::alphatJayatillekeWallFunction;
-        Prt             0.85;
-        value           $internalField;
+        type            calculated;
+        value           uniform 300;
     }
-
-    #includeEtc "caseDicts/setConstraintTypes"
+    top
+    {
+        type            calculated;
+        value           uniform 300;
+    }
+    frontAndBack
+    {
+        type            calculated;
+        value           uniform 300;
+    }
+    region0_to_wallFilmRegion_wallFilmFaces
+    {
+        type            calculated;
+        value           uniform 300;
+    }
 }
 
 
@@ -172,23 +186,34 @@ FoamFile
 {
     format      ascii;
     class       volScalarField;
+    location    "0";
     object      p;
 }
 
 
 dimensions      [1 -1 -2 0 0 0 0];
 
-internalField   uniform 0;
+internalField   uniform 100000;
 
 boundaryField
 {
-    wall
+    "(sides|frontAndBack)"
     {
         type            calculated;
         value           $internalField;
     }
 
-    #includeEtc "caseDicts/setConstraintTypes"
+    top
+    {
+        type            calculated;
+        value           $internalField;
+    }
+
+    region0_to_wallFilmRegion_wallFilmFaces
+    {
+        type            calculated;
+        value           $internalField;
+    }
 }
 
 
@@ -201,23 +226,33 @@ FoamFile
 {
     format      ascii;
     class       volScalarField;
+    location    "0";
     object      p_rgh;
 }
 
 
 dimensions      [1 -1 -2 0 0 0 0];
 
-internalField   uniform 0;
+internalField   uniform 100000;
 
 boundaryField
 {
-    wall
+    "(sides|frontAndBack)"
     {
         type            fixedFluxPressure;
-        value           $internalField;
     }
 
-    #includeEtc "caseDicts/setConstraintTypes"
+    top
+    {
+        type            prghTotalPressure;
+        p0              $internalField;
+        rho             thermo:rho;
+    }
+
+    region0_to_wallFilmRegion_wallFilmFaces
+    {
+        type            fixedFluxPressure;
+    }
 }
 
 
@@ -229,6 +264,7 @@ boundaryField
 FoamFile
 {
     format      ascii;
+    location    "0";
     class       volScalarField;
     object      T;
 }
@@ -240,22 +276,23 @@ internalField   uniform 300;
 
 boundaryField
 {
-    floor
-    {
-        type            fixedValue;
-        value           uniform 301;
-    }
-    ceiling
+    "(sides|frontAndBack)"
     {
         type            fixedValue;
         value           uniform 300;
     }
-    sideWalls
+
+    top
     {
-        type            zeroGradient;
+        type            inletOutlet;
+        inletValue      $internalField;
     }
 
-    #includeEtc "caseDicts/setConstraintTypes"
+    region0_to_wallFilmRegion_wallFilmFaces
+    {
+        type            fixedValue;
+        value           uniform 300;
+    }
 }
 
 
@@ -278,17 +315,34 @@ FoamFile
 
 solvers
 {
-    "rho.*"
+    "alpha.liquid.*"
     {
-        solver          diagonal;
+        nAlphaCorr      2;
+        nAlphaSubCycles 1;
+
+        MULESCorr       yes;
+        nLimiterIter    5;
+
+        solver          smoothSolver;
+        smoother        symGaussSeidel;
+        tolerance       1e-8;
+        relTol          0;
+    }
+
+    "pcorr.*"
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-5;
+        relTol          0;
     }
 
     p_rgh
     {
-        solver          GAMG;
-        smoother        DIC;
-        tolerance       1e-8;
-        relTol          0.01;
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-9;
+        relTol          0.05;
     }
 
     p_rghFinal
@@ -297,39 +351,116 @@ solvers
         relTol          0;
     }
 
-    "(U|e|k|epsilon)"
+    "U.*"
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-6;
+        relTol          0;
+    }
+
+    "(T|k|B|nuTilda|sigma).*"
     {
         solver          PBiCGStab;
         preconditioner  DILU;
         tolerance       1e-8;
-        relTol          0.01;
-    }
-
-    "(U|e|k|epsilon)Final"
-    {
-        $U;
         relTol          0;
     }
-
 }
 
 PIMPLE
 {
-    momentumPredictor no;
+    momentumPredictor   no;
+    nOuterCorrectors    1;
+    nCorrectors         2;
     nNonOrthogonalCorrectors 0;
-    nCorrectors       2;
-
-    pRefCell          0;
-    pRefValue         0;
 }
 
 relaxationFactors
 {
     equations
     {
-        ".*"   1.0;
+        ".*" 1;
     }
 }
+
+
+
+</file_content>
+</file_end>
+
+<file_begin>file name: topoSetDict
+<file_content>
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      topoSetDict;
+}
+
+
+
+actions
+(
+    {
+        name    wallFilmFaceSet;
+        type    faceSet;
+        action  new;
+        source  patchToFace;
+        patch   filmWalls;
+    }
+    {
+        name    wallFilmFaces;
+        type    faceZoneSet;
+        action  new;
+        source  setToFaceZone;
+        faceSet wallFilmFaceSet;
+    }
+);
+
+
+</file_content>
+</file_end>
+
+<file_begin>file name: decomposeParDict
+<file_content>
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      decomposeParDict;
+}
+
+
+numberOfSubdomains 4;
+
+method          metis;
+
+simpleCoeffs
+{
+    n               (2 2 1);
+}
+
+hierarchicalCoeffs
+{
+    n               (1 1 1);
+    order           xyz;
+}
+
+metisCoeffs
+{
+    processorWeights ( 1 1 1 1 );
+}
+
+manualCoeffs
+{
+    dataFile        "";
+}
+
+distributed     no;
+
+roots           ( );
 
 
 
@@ -350,62 +481,164 @@ convertToMeters 1;
 
 vertices
 (
-    (0 0 -1)
-    (9 0 -1)
-    (9 1 -1)
-    (0 1 -1)
-    (0 0 1)
-    (9 0 1)
-    (9 1 1)
-    (0 1 1)
+    (0.5 0 -0.5)
+    (1 0 -0.5)
+    (2 0 -0.5)
+    (2 0.707107 -0.5)
+    (0.707107 0.707107 -0.5)
+    (0.353553 0.353553 -0.5)
+    (2 2 -0.5)
+    (0.707107 2 -0.5)
+    (0 2 -0.5)
+    (0 1 -0.5)
+    (0 0.5 -0.5)
+    (-0.5 0 -0.5)
+    (-1 0 -0.5)
+    (-2 0 -0.5)
+    (-2 0.707107 -0.5)
+    (-0.707107 0.707107 -0.5)
+    (-0.353553 0.353553 -0.5)
+    (-2 2 -0.5)
+    (-0.707107 2 -0.5)
+    (0.5 0 0.5)
+    (1 0 0.5)
+    (2 0 0.5)
+    (2 0.707107 0.5)
+    (0.707107 0.707107 0.5)
+    (0.353553 0.353553 0.5)
+    (2 2 0.5)
+    (0.707107 2 0.5)
+    (0 2 0.5)
+    (0 1 0.5)
+    (0 0.5 0.5)
+    (-0.5 0 0.5)
+    (-1 0 0.5)
+    (-2 0 0.5)
+    (-2 0.707107 0.5)
+    (-0.707107 0.707107 0.5)
+    (-0.353553 0.353553 0.5)
+    (-2 2 0.5)
+    (-0.707107 2 0.5)
 );
 
 blocks
 (
-    hex (0 1 2 3 4 5 6 7) (90 10 1) simpleGrading (1 1 1)
+    hex (5 4 9 10 24 23 28 29) (10 10 11) simpleGrading (1 1 1)
+    hex (0 1 4 5 19 20 23 24) (10 10 11) simpleGrading (1 1 1)
+    hex (1 2 3 4 20 21 22 23) (20 10 11) simpleGrading (1 1 1)
+    hex (4 3 6 7 23 22 25 26) (20 20 11) simpleGrading (1 1 1)
+    hex (9 4 7 8 28 23 26 27) (10 20 11) simpleGrading (1 1 1)
+    hex (15 16 10 9 34 35 29 28) (10 10 11) simpleGrading (1 1 1)
+    hex (12 11 16 15 31 30 35 34) (10 10 11) simpleGrading (1 1 1)
+    hex (13 12 15 14 32 31 34 33) (20 10 11) simpleGrading (1 1 1)
+    hex (14 15 18 17 33 34 37 36) (20 20 11) simpleGrading (1 1 1)
+    hex (15 9 8 18 34 28 27 37) (10 20 11) simpleGrading (1 1 1)
 );
+
+edges
+(
+    arc 0 5 (0.469846 0.17101 -0.5)
+    arc 5 10 (0.17101 0.469846 -0.5)
+    arc 1 4 (0.939693 0.34202 -0.5)
+    arc 4 9 (0.34202 0.939693 -0.5)
+    arc 19 24 (0.469846 0.17101 0.5)
+    arc 24 29 (0.17101 0.469846 0.5)
+    arc 20 23 (0.939693 0.34202 0.5)
+    arc 23 28 (0.34202 0.939693 0.5)
+    arc 11 16 (-0.469846 0.17101 -0.5)
+    arc 16 10 (-0.17101 0.469846 -0.5)
+    arc 12 15 (-0.939693 0.34202 -0.5)
+    arc 15 9 (-0.34202 0.939693 -0.5)
+    arc 30 35 (-0.469846 0.17101 0.5)
+    arc 35 29 (-0.17101 0.469846 0.5)
+    arc 31 34 (-0.939693 0.34202 0.5)
+    arc 34 28 (-0.34202 0.939693 0.5)
+);
+
+defaultPatch
+{
+    name frontAndBack;
+    type wall;
+}
 
 boundary
 (
-    floor
+    filmWalls
     {
         type wall;
         faces
         (
-            (1 5 4 0)
+            (0 1 20 19)
+            (1 2 21 20)
+            (12 11 30 31)
+            (13 12 31 32)
+            (10 5 24 29)
+            (5 0 19 24)
+            (16 10 29 35)
+            (11 16 35 30)
         );
     }
 
-    ceiling
+    sides
     {
-        type wall;
+        type patch;
         faces
         (
-            (3 7 6 2)
+            (2 3 22 21)
+            (3 6 25 22)
+            (14 13 32 33)
+            (17 14 33 36)
         );
     }
 
-    sideWalls
+    top
     {
-        type wall;
+        type patch;
         faces
         (
-            (0 4 7 3)
-            (2 6 5 1)
-        );
-    }
-
-    frontAndBack
-    {
-        type empty;
-        faces
-        (
-            (0 3 2 1)
-            (4 5 6 7)
+            (7 8 27 26)
+            (6 7 26 25)
+            (8 18 37 27)
+            (18 17 36 37)
         );
     }
 );
 
+
+
+</file_content>
+</file_end>
+
+<file_begin>file name: extrudeToRegionMeshDict
+<file_content>
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      extrudeToRegionMeshDict;
+}
+
+
+region          wallFilmRegion;
+
+faceZones       (wallFilmFaces);
+
+sampleMode      nearestPatchFace;
+
+oneD            false;
+
+extrudeModel    linearNormal;
+
+nLayers         1;
+
+expansionRatio  1;
+
+adaptMesh       yes; 
+
+linearNormalCoeffs
+{
+    thickness       0.01;
+}
 
 
 </file_content>
@@ -434,19 +667,15 @@ gradSchemes
 
 divSchemes
 {
-    default             none;
+    div(rhoPhi,U)   Gauss linearUpwindV grad(U);
+    div(rhoPhi,T)   Gauss linearUpwind grad(T);
 
-    div(phi,U)          Gauss linearUpwind grad(U);
-    div(phi,e)          Gauss limitedLinear 1;
+    div(phi,alpha)  Gauss interfaceCompression vanLeer 1;
 
-    turbulence          Gauss limitedLinear 1;
-    div(phi,k)          $turbulence;
-    div(phi,epsilon)    $turbulence;
+    div(phi,p)      Gauss upwind;
+    div(rhoPhi,K)   Gauss upwind;
 
-    div(phi,(p|rho))    Gauss limitedLinear 1;
-    div(phi,K)          Gauss linear;
-
-    div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
+    div(((thermo:rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
 }
 
 laplacianSchemes
@@ -480,27 +709,27 @@ FoamFile
 }
 
 
-application     buoyantFoam;
+application     compressibleInterFoam;
 
-startFrom       latestTime;
+startFrom       startTime;
 
 startTime       0;
 
 stopAt          endTime;
 
-endTime         1000;
+endTime         20;
 
-deltaT          1;
+deltaT          1e-02;
 
-writeControl    runTime;
+writeControl    adjustableRunTime;
 
-writeInterval   50;
+writeInterval   0.2;
 
 purgeWrite      0;
 
-writeFormat     binary;
+writeFormat     ascii;
 
-writePrecision  6;
+writePrecision  10;
 
 writeCompression off;
 
@@ -508,13 +737,14 @@ timeFormat      general;
 
 timePrecision   6;
 
-runTimeModifiable true;
+runTimeModifiable yes;
 
-functions
-{
-    #includeFunc residuals(p_rgh)
-    #includeFunc streamlinesLine(funcName=streamlines, start=(0 0.5 0), end=(9 0.5 0), nPoints=24, U)
-}
+adjustTimeStep  yes;
+
+maxCo           0.3;
+maxAlphaCo      1;
+
+maxDeltaT       1;
 
 
 </file_content>
@@ -523,6 +753,218 @@ functions
 </directory_end>
 
 <directory_begin>directory name: constant
+<file_begin>file name: cloudProperties
+<file_content>
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      cloudProperties;
+}
+
+
+type        thermoCloud;
+
+solution
+{
+    coupled         no;
+    transient       yes;
+    cellValueSourceCorrection no;
+    maxCo           0.3;
+
+    sourceTerms
+    {
+        schemes
+        {
+            rho             explicit 1;
+            U               explicit 1;
+            Yi              explicit 1;
+            h               explicit 1;
+            radiation       explicit 1;
+        }
+    }
+
+    interpolationSchemes
+    {
+        thermo:rho.air  cell;
+        U               cellPoint;
+        thermo:mu.air   cell;
+        T.air           cell;
+        Cp.air          cell;
+        thermo:kappa.air cell;
+        p               cell;
+    }
+
+    integrationSchemes
+    {
+        U               Euler;
+        T               analytical;
+    }
+}
+
+constantProperties
+{
+    rho0            1000;
+    T0              300;
+    Cp0             4187;
+
+    constantVolume  false;
+}
+
+subModels
+{
+    particleForces
+    {
+        sphereDrag;
+        gravity;
+    }
+
+    injectionModels
+    {
+        model1
+        {
+            type            thermoLookupTableInjection;
+            massTotal       100;
+            parcelBasisType mass;
+            SOI             0;
+            inputFile       "parcelInjectionProperties";
+            duration        20.0;
+            parcelsPerSecond 100;
+            randomise       true;
+        }
+    }
+
+    dispersionModel none;
+
+    patchInteractionModel standardWallInteraction;
+
+    heatTransferModel none;
+
+    compositionModel singlePhaseMixture;
+
+    phaseChangeModel none;
+
+    stochasticCollisionModel none;
+
+    surfaceFilmModel thermoSurfaceFilm;
+
+    radiation       off;
+
+    standardWallInteractionCoeffs
+    {
+        type            rebound;
+    }
+
+    singlePhaseMixtureCoeffs
+    {
+        phases
+        (
+            liquid
+            {
+                H2O         1;
+            }
+        );
+    }
+
+    thermoSurfaceFilmCoeffs
+    {
+        interactionType absorb;
+    }
+}
+
+
+cloudFunctions
+{}
+
+
+
+</file_content>
+</file_end>
+
+<file_begin>file name: physicalProperties.liquid
+<file_content>
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      physicalProperties;
+}
+
+
+thermoType
+{
+    type            heRhoThermo;
+    mixture         pureMixture;
+    properties      liquid;
+    energy          sensibleInternalEnergy;
+}
+
+mixture
+{
+    H2O;
+}
+
+
+
+</file_content>
+</file_end>
+
+<file_begin>file name: fvModels
+<file_content>
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      fvModels;
+}
+
+
+VoFClouds
+{
+    type    VoFClouds;
+
+    libs    ("libVoFClouds.so");
+
+    phase   liquid;
+    carrierPhase air;
+}
+
+VoFSurfaceFilm
+{
+    type    VoFSurfaceFilm;
+
+    libs    ("libVoFSurfaceFilm.so");
+}
+
+
+</file_content>
+</file_end>
+
+<file_begin>file name: parcelInjectionProperties
+<file_content>
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      scalarListList;
+}
+
+
+(
+    (0 1.95 -0.2) (0 -5 0) 0.001 1000 0.002 300 4200
+    (0 1.95    0) (0 -5 0) 0.001 1000 0.002 300 4200
+    (0 1.95  0.2) (0 -5 0) 0.001 1000 0.002 300 4200
+);
+
+
+
+</file_content>
+</file_end>
+
 <file_begin>file name: momentumTransport
 <file_content>
 FoamFile
@@ -534,15 +976,80 @@ FoamFile
 }
 
 
-simulationType laminar;
+simulationType  laminar;
 
-RAS
+
+
+</file_content>
+</file_end>
+
+<file_begin>file name: surfaceFilmProperties
+<file_content>
+FoamFile
 {
-    model           kEpsilon;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      SurfaceFilmProperties;
+}
 
-    turbulence      on;
 
-    printCoeffs     on;
+regionName      wallFilmRegion;
+
+phase           liquid;
+
+viscosity
+{
+    model        Newtonian;
+}
+
+sigma       0.07;
+
+deltaWet    1e-4;
+
+hydrophilic no;
+
+transfer
+{
+    VoFPatchTransfer
+    {
+        deltaFactorToVoF  0.2;
+        alphaToVoF        0.2;
+
+        deltaFactorToFilm 0;
+        alphaToFilm       0;
+
+        transferRateCoeff 0.1;
+    }
+}
+
+momentumTransport
+{
+    model       laminar;
+    Cf          0.005;
+}
+
+forces
+{
+    thermocapillary;
+}
+
+upperSurfaceModels
+{
+    heatTransfer
+    {
+        model    constant;
+        c0       1e-8;
+    }
+}
+
+lowerSurfaceModels
+{
+    heatTransfer
+    {
+        model   constant;
+        c0      1e-8;
+    }
 }
 
 
@@ -550,7 +1057,100 @@ RAS
 </file_content>
 </file_end>
 
-<file_begin>file name: physicalProperties
+<file_begin>file name: combustionProperties
+<file_content>
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      combustionProperties;
+}
+
+
+combustionModel  none;
+
+
+</file_content>
+</file_end>
+
+<file_begin>file name: speciesThermo
+<file_content>species
+(
+    O2
+    H2O
+    N2
+);
+
+O2
+{
+    specie
+    {
+        molWeight       31.9988;
+    }
+    thermodynamics
+    {
+        Tlow            200;
+        Thigh           5000;
+        Tcommon         1000;
+        highCpCoeffs    ( 3.69758 0.00061352 -1.25884e-07 1.77528e-11 -1.13644e-15 -1233.93 3.18917 );
+        lowCpCoeffs     ( 3.21294 0.00112749 -5.75615e-07 1.31388e-09 -8.76855e-13 -1005.25 6.03474 );
+    }
+    transport
+    {
+        As              1.67212e-06;
+        Ts              170.672;
+    }
+}
+
+H2O
+{
+    specie
+    {
+        molWeight       18.0153;
+    }
+    thermodynamics
+    {
+        Tlow            200;
+        Thigh           5000;
+        Tcommon         1000;
+        highCpCoeffs    ( 2.67215 0.00305629 -8.73026e-07 1.201e-10 -6.39162e-15 -29899.2 6.86282 );
+        lowCpCoeffs     ( 3.38684 0.00347498 -6.3547e-06 6.96858e-09 -2.50659e-12 -30208.1 2.59023 );
+    }
+    transport
+    {
+        As              1.67212e-06;
+        Ts              170.672;
+    }
+}
+
+N2
+{
+    specie
+    {
+        molWeight       28.0134;
+    }
+    thermodynamics
+    {
+        Tlow            200;
+        Thigh           5000;
+        Tcommon         1000;
+        highCpCoeffs    ( 2.92664 0.00148798 -5.68476e-07 1.0097e-10 -6.75335e-15 -922.798 5.98053 );
+        lowCpCoeffs     ( 3.29868 0.00140824 -3.96322e-06 5.64152e-09 -2.44486e-12 -1020.9 3.95037 );
+    }
+    transport
+    {
+        As              1.67212e-06;
+        Ts              170.672;
+    }
+}
+
+
+
+</file_content>
+</file_end>
+
+<file_begin>file name: physicalProperties.air
 <file_content>
 FoamFile
 {
@@ -566,8 +1166,8 @@ thermoType
     type            heRhoThermo;
     mixture         pureMixture;
     transport       const;
-    thermo          eConst;
-    equationOfState Boussinesq;
+    thermo          hConst;
+    equationOfState rhoConst;
     specie          specie;
     energy          sensibleInternalEnergy;
 }
@@ -576,26 +1176,53 @@ mixture
 {
     specie
     {
-        molWeight       18;
+        molWeight   28.9;
     }
     equationOfState
     {
-        rho0            1;
-        T0              300;
-        beta            1e-03;
+        rho         1.2;
     }
     thermodynamics
     {
-        Cv              712;
-        Hf              0;
+        Cp          1007;
+        Hf          0;
     }
     transport
     {
-        mu              1e-03;
-        Pr              1;
+        mu          1.84e-05;
+        Pr          0.7;
     }
 }
 
+solids
+{
+};
+
+liquids
+{
+    H2O;
+};
+
+
+</file_content>
+</file_end>
+
+<file_begin>file name: phaseProperties
+<file_content>
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      physicalProperties;
+}
+
+
+phases (liquid air);
+
+pMin        10000;
+
+sigma       0.0309;
 
 
 </file_content>
