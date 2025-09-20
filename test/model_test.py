@@ -46,7 +46,7 @@ generated_ids = model.generate(
     **model_inputs,
     max_new_tokens=500,
     temperature=0.1,
-    repetition_penalty=1.2,
+    repetition_penalty=1.1,
 
 )
 output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
