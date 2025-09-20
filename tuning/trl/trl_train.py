@@ -74,7 +74,7 @@ tokenized_train_ds = tokenized_train_ds.remove_columns(["text", "system_prompt",
 tokenized_test_ds = tokenized_test_ds.remove_columns(["text", "system_prompt", "user_prompt", "folder_name", "file_name", "case_name", "case_domain", "user_requirement", "file_content", "case_category", "case_solver"])
 
 peft_params = LoraConfig(
-    lora_alpha=16,
+    lora_alpha=8,
     lora_dropout=0.1,
     r=64, #change rank
     bias="none",
