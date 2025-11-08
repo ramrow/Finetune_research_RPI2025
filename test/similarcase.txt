@@ -1,5 +1,3 @@
-User requirement: Perform a 3D Bernard Cell simulation using OpenFOAM buoyantFoam solver. The computational domain spans 9 m x 1 m x 2 m. The simulation begins at t=0 seconds and runs until t=1000 seconds with a time step of 1 second, and results are written at intervals of every 50 seconds. One wall has a temperature of 301 K, while the other has a temperature of 300 K.
-Refer to the following similar case file content to ensure the generated file aligns with the user requirement:
 <index>
 case name: BernardCells
 case domain: heatTransfer
@@ -627,6 +625,51 @@ value           (0 -9.81 0);
 
 Similar cases are ordered, with smaller numbers indicating greater similarity. For example, similar_case_1 is more similar than similar_case_2, and similar_case_2 is more similar than similar_case_3.
 <similar_case_1><index>
+case name: biconic25-55Run35
+case domain: compressible
+case category: None
+case solver: rhoCentralFoam
+</index>
+
+
+<directory_structure>
+<dir>directory name: 0. File names in this directory: [U, p, T]</dir>
+<dir>directory name: system. File names in this directory: [fvSolution, collapseDict, blockMeshDict, sample, fvSchemes, controlDict]</dir>
+<dir>directory name: constant. File names in this directory: [momentumTransport, physicalProperties, grid256.dat]</dir>
+</directory_structure>
+
+
+<allrun_script>
+#!/bin/sh
+cd "${0%/*}" || exit 1    # Run from this directory
+
+# Source tutorial run functions
+. "$WM_PROJECT_DIR/bin/tools/RunFunctions"
+
+runApplication blockMesh
+
+runApplication datToFoam constant/grid256.dat
+
+points="constant/polyMesh/points"
+pointsTmp="constant/points.tmp"
+sed -i -e 's/binary/ascii/' -ne '1,17p' $points
+cat $pointsTmp >> $points
+rm $pointsTmp
+
+runApplication collapseEdges -overwrite
+
+echo "Changing patch type to wedge type in boundary file"
+sed -i '/wedge/,/nFaces/{s/patch/wedge/}' constant/polyMesh/boundary
+
+runApplication "$(getApplication)"
+
+
+#------------------------------------------------------------------------------
+
+</allrun_script></similar_case_1>
+
+
+<similar_case_2><index>
 case name: externalCoupledCavity
 case domain: heatTransfer
 case category: None
@@ -656,44 +699,5 @@ runApplication $(getApplication) &
 
 #------------------------------------------------------------------------------
 
-</allrun_script></similar_case_1>
-
-
-<similar_case_2><index>
-case name: buoyantCavity
-case domain: heatTransfer
-case category: None
-case solver: buoyantFoam
-</index>
-
-
-<directory_structure>
-<dir>directory name: validation. File names in this directory: [createGraphs]</dir>
-<dir>directory name: 0. File names in this directory: [k, epsilon, omega, nut, U, alphat, p, p_rgh, T]</dir>
-<dir>directory name: system. File names in this directory: [fvSolution, blockMeshDict, sample, fvSchemes, controlDict]</dir>
-<dir>directory name: constant. File names in this directory: [momentumTransport, physicalProperties, pRef, g]</dir>
-</directory_structure>
-
-
-<allrun_script>
-#!/bin/sh
-cd ${0%/*} || exit 1    # Run from this directory
-
-# Source tutorial run functions
-. $WM_PROJECT_DIR/bin/tools/RunFunctions
-
-# Set application name
-application=$(getApplication)
-
-runApplication blockMesh
-runApplication $application
-runApplication -s sample  postProcess -latestTime -func sample
-
-runApplication validation/createGraphs
-
-#------------------------------------------------------------------------------
-
 </allrun_script></similar_case_2>
 
-
-Similar case reference is always correct. If you find the user requirement is very consistent with the similar case reference, you should use the similar case reference as the template to generate the file.Just modify the necessary parts to make the file complete and functional.Please ensure that the generated file is complete, functional, and logically sound.Additionally, apply your domain expertise to verify that all numerical values are consistent with the user's requirements, maintaining accuracy and coherence.
