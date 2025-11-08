@@ -4,7 +4,7 @@ import os
 token = input()
 api = HfApi(token=os.getenv(token))
 api.upload_folder(
-    folder_path="bernardFOAM.csv",
-    repo_id="finalform/bernardFOAM",
-    repo_type="dataset",
+    folder_path="foamqwen/checkpoint-312",
+    repo_id="finalform/foamQwen2.5-7B-Instruct-similar",
+    repo_type="model",
 )
