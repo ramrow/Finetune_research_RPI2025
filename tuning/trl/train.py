@@ -5,9 +5,9 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig
 
-# ===================================
-# 1. Setup
-# ===================================
+# -------------------------------------------------
+# 1. Device & Quantization
+# -------------------------------------------------
 local_rank = int(os.getenv("LOCAL_RANK", "0"))
 device = f"cuda:{local_rank}"
 
@@ -27,99 +27,240 @@ model = AutoModelForCausalLM.from_pretrained(
     torch_dtype=torch.bfloat16,
 )
 model.config.use_cache = False
+model.config.pretraining_tp = 1
 
 tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
-tokenizer.chat_template = """{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0].content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" and message.content is string and not(message.content.startswith('<tool_response>') and message.content.endswith('</tool_response>')) %}\n        {%- set ns.multi_step_tool = false %}\n        {%- set ns.last_query_index = index %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if message.content is string %}\n        {%- set content = message.content %}\n    {%- else %}\n        {%- set content = '' %}\n    {%- endif %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n\n        {{- '<|im_start|>' + message.role }}\n        {% generation %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- content }}\n            {%- endif %}\n        {%- else %}\n            {{- content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>' }}\n        {% endgeneration %}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- endif %}\n{%- endif %}"""
 
-# ===================================
-# 2. Dataset
-# ===================================
-raw = load_dataset("finalform/foamGPT")
-train_ds = raw["train"].map(lambda x: {"messages": [
-    {"role": "system", "content": x["system_prompt"]},
-    {"role": "user", "content": x["user_prompt"]},
-    {"role": "assistant", "content": x["file_content"]},
-]}, remove_columns=raw["train"].column_names)
+# -------------------------------------------------
+# 2. Dataset → prompt + completion
+# -------------------------------------------------
+raw = load_dataset("finalform/foamGPT", split="train").train_test_split(test_size=0.1, seed=42)
+train_raw, eval_raw = raw["train"], raw["test"]
 
-eval_ds = raw["test"].map(lambda x: {"messages": [
-    {"role": "system", "content": x["system_prompt"]},
-    {"role": "user", "content": x["user_prompt"]},
-    {"role": "assistant", "content": x["file_content"]},
-]}, remove_columns=raw["test"].column_names)
+def to_prompt_completion(example):
+    prompt = [
+        {"role": "system", "content": example["system_prompt"]},
+        {"role": "user",   "content": example["user_prompt"]},
+    ]
+    completion = [
+        {"role": "assistant", "content": example["file_content"]}
+    ]
+    return {"prompt": prompt, "completion": completion}
 
-# ===================================
-# 3. LoRA
-# ===================================
-lora_config = LoraConfig(
+train_ds = train_raw.map(to_prompt_completion, remove_columns=train_raw.column_names)
+eval_ds  = eval_raw.map (to_prompt_completion, remove_columns=eval_raw.column_names)
+
+# -------------------------------------------------
+# 3. Formatting function (applies chat template + masking)
+# -------------------------------------------------
+def formatting_func(example):
+    # Build full text
+    full_text = (
+        tokenizer.apply_chat_template(example["prompt"], tokenize=False, add_generation_prompt=True) +
+        tokenizer.apply_chat_template(example["completion"], tokenize=False, add_generation_prompt=False)
+    )
+    return full_text
+
+# -------------------------------------------------
+# 4. LoRA
+# -------------------------------------------------
+lora_cfg = LoraConfig(
     r=64,
     lora_alpha=16,
     lora_dropout=0.05,
+    target_modules="all-linear",
     bias="none",
     task_type="CAUSAL_LM",
-    target_modules="all-linear",
 )
-model = get_peft_model(model, lora_config)
+model = get_peft_model(model, lora_cfg)
 
-# ===================================
-# 4. Training Args
-# ===================================
+# -------------------------------------------------
+# 5. Training args
+# -------------------------------------------------
 training_args = SFTConfig(
     output_dir="foamqwen",
-    num_train_epochs=5,
+    num_train_epochs=7,
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=8,
-    learning_rate=2e-4,           # ← stable
+    # assistant_only_loss=True,           # ← ENABLED
+    completion_only_loss=True,
+    optim="paged_adamw_32bit",
+    learning_rate=2e-4,
     weight_decay=0.01,
     bf16=True,
     fp16=False,
-    max_grad_norm=1.0,            # ← not 0.3
+    max_grad_norm=1.0,
     warmup_ratio=0.03,
     lr_scheduler_type="cosine",
     logging_steps=10,
-    eval_strategy="epoch",  # ← prints eval_loss
+    eval_strategy="epoch",
     save_strategy="epoch",
     report_to="tensorboard",
+    packing=False,
     remove_unused_columns=False,
     ddp_find_unused_parameters=False,
-    assistant_only_loss=True,     # ← NOW WORKS
-    packing=False,
-    dataset_text_field="messages",
-    max_seq_length=2048,
 )
 
-# ===================================
-# 5. Trainer — NO CUSTOM COLLATOR
-# ===================================
+# -------------------------------------------------
+# 6. Trainer – uses formatting_func + assistant_only_loss
+# -------------------------------------------------
 trainer = SFTTrainer(
     model=model,
     args=training_args,
     train_dataset=train_ds,
     eval_dataset=eval_ds,
     processing_class=tokenizer,
-    # NO data_collator → uses internal SFT collator
+    max_seq_length=2048,
+    formatting_func=formatting_func,     # ← applies chat template
+    # NO data_collator → default handles padding + masking
 )
 
-# ===================================
-# 6. DEBUG: Verify masking
-# ===================================
+# -------------------------------------------------
+# 7. DEBUG: Check masking
+# -------------------------------------------------
 print("\n=== DEBUG BATCH ===")
 batch = next(iter(trainer.get_train_dataloader()))
-print("Keys:", list(batch.keys()))
-print("attention_mask shape:", batch["attention_mask"].shape)
-real = batch["attention_mask"].sum().item()
+print("Keys:", batch.keys())
+real = batch["attention2024attention_mask"].sum().item()
 assist = (batch["labels"] != -100).sum().item()
 print(f"Assistant token ratio: {assist/real:.1%}")
 
-# ===================================
-# 7. TRAIN
-# ===================================
+# -------------------------------------------------
+# 8. TRAIN
+# -------------------------------------------------
 trainer.train()
 trainer.save_model("foamqwen")
-tokenizer.save_pretrained("foamqwen")
 print(trainer.evaluate())
+
+
+# import os
+# import torch
+# from datasets import load_dataset
+# from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+# from peft import LoraConfig, get_peft_model
+# from trl import SFTTrainer, SFTConfig
+
+# # ===================================
+# # 1. Setup
+# # ===================================
+# local_rank = int(os.getenv("LOCAL_RANK", "0"))
+# device = f"cuda:{local_rank}"
+
+# quant_config = BitsAndBytesConfig(
+#     load_in_4bit=True,
+#     bnb_4bit_quant_type="nf4",
+#     bnb_4bit_compute_dtype=torch.bfloat16,
+#     bnb_4bit_use_double_quant=True,
+# )
+
+# model_name = "Qwen/Qwen2.5-7B-Instruct"
+# model = AutoModelForCausalLM.from_pretrained(
+#     model_name,
+#     quantization_config=quant_config,
+#     device_map={"": device},
+#     trust_remote_code=True,
+#     torch_dtype=torch.bfloat16,
+# )
+# model.config.use_cache = False
+
+# tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+# tokenizer.pad_token = tokenizer.eos_token
+# tokenizer.padding_side = "right"
+# tokenizer.chat_template = """{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0].content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" and message.content is string and not(message.content.startswith('<tool_response>') and message.content.endswith('</tool_response>')) %}\n        {%- set ns.multi_step_tool = false %}\n        {%- set ns.last_query_index = index %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if message.content is string %}\n        {%- set content = message.content %}\n    {%- else %}\n        {%- set content = '' %}\n    {%- endif %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n\n        {{- '<|im_start|>' + message.role }}\n        {% generation %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- content }}\n            {%- endif %}\n        {%- else %}\n            {{- content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>' }}\n        {% endgeneration %}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- endif %}\n{%- endif %}"""
+
+# # ===================================
+# # 2. Dataset
+# # ===================================
+# raw = load_dataset("finalform/foamGPT")
+# train_ds = raw["train"].map(lambda x: {"messages": [
+#     {"role": "system", "content": x["system_prompt"]},
+#     {"role": "user", "content": x["user_prompt"]},
+#     {"role": "assistant", "content": x["file_content"]},
+# ]}, remove_columns=raw["train"].column_names)
+
+# eval_ds = raw["test"].map(lambda x: {"messages": [
+#     {"role": "system", "content": x["system_prompt"]},
+#     {"role": "user", "content": x["user_prompt"]},
+#     {"role": "assistant", "content": x["file_content"]},
+# ]}, remove_columns=raw["test"].column_names)
+
+# # ===================================
+# # 3. LoRA
+# # ===================================
+# lora_config = LoraConfig(
+#     r=64,
+#     lora_alpha=16,
+#     lora_dropout=0.05,
+#     bias="none",
+#     task_type="CAUSAL_LM",
+#     target_modules="all-linear",
+# )
+# model = get_peft_model(model, lora_config)
+
+# # ===================================
+# # 4. Training Args
+# # ===================================
+# training_args = SFTConfig(
+#     output_dir="foamqwen",
+#     num_train_epochs=5,
+#     per_device_train_batch_size=2,
+#     per_device_eval_batch_size=2,
+#     gradient_accumulation_steps=8,
+#     learning_rate=2e-4,           # ← stable
+#     weight_decay=0.01,
+#     bf16=True,
+#     fp16=False,
+#     max_grad_norm=1.0,            # ← not 0.3
+#     warmup_ratio=0.03,
+#     lr_scheduler_type="cosine",
+#     logging_steps=10,
+#     eval_strategy="epoch",  # ← prints eval_loss
+#     save_strategy="epoch",
+#     report_to="tensorboard",
+#     remove_unused_columns=False,
+#     ddp_find_unused_parameters=False,
+#     assistant_only_loss=True,     # ← NOW WORKS
+#     packing=False,
+#     dataset_text_field="messages",
+#     max_seq_length=2048,
+# )
+
+# # ===================================
+# # 5. Trainer — NO CUSTOM COLLATOR
+# # ===================================
+# trainer = SFTTrainer(
+#     model=model,
+#     args=training_args,
+#     train_dataset=train_ds,
+#     eval_dataset=eval_ds,
+#     processing_class=tokenizer,
+#     # NO data_collator → uses internal SFT collator
+# )
+
+# # ===================================
+# # 6. DEBUG: Verify masking
+# # ===================================
+# print("\n=== DEBUG BATCH ===")
+# batch = next(iter(trainer.get_train_dataloader()))
+# print("Keys:", list(batch.keys()))
+# print("attention_mask shape:", batch["attention_mask"].shape)
+# real = batch["attention_mask"].sum().item()
+# assist = (batch["labels"] != -100).sum().item()
+# print(f"Assistant token ratio: {assist/real:.1%}")
+
+# # ===================================
+# # 7. TRAIN
+# # ===================================
+# trainer.train()
+# trainer.save_model("foamqwen")
+# tokenizer.save_pretrained("foamqwen")
+# print(trainer.evaluate())
+
+
+#=============================================================================================================
 
 # import os
 # import torch
@@ -177,17 +318,6 @@ print(trainer.evaluate())
 
 # train_ds = raw_ds["train"].map(to_conversational, remove_columns=raw_ds["train"].column_names)
 # test_ds  = raw_ds["test"].map (to_conversational, remove_columns=raw_ds["test"].column_names)
-# # train_ds = ds['train'].map(to_conversational)
-# # test_ds = ds['test'].map(to_conversational)
-# # # Optional: Remove unused columns for cleanliness (but keep "messages")
-# # train_ds = train_ds.remove_columns([
-# #     "system_prompt", "user_prompt", "folder_name", "file_name", "case_name",
-# #     "case_domain", "user_requirement", "file_content", "case_category", "case_solver"
-# # ])
-# # test_ds = test_ds.remove_columns([
-# #     "system_prompt", "user_prompt", "folder_name", "file_name", "case_name",
-# #     "case_domain", "user_requirement", "file_content", "case_category", "case_solver"
-# # ])
 
 # tokenizer.chat_template = """{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0].content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" and message.content is string and not(message.content.startswith('<tool_response>') and message.content.endswith('</tool_response>')) %}\n        {%- set ns.multi_step_tool = false %}\n        {%- set ns.last_query_index = index %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if message.content is string %}\n        {%- set content = message.content %}\n    {%- else %}\n        {%- set content = '' %}\n    {%- endif %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n\n        {{- '<|im_start|>' + message.role }}\n        {% generation %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- content }}\n            {%- endif %}\n        {%- else %}\n            {{- content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>' }}\n        {% endgeneration %}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- endif %}\n{%- endif %}"""
 
@@ -232,7 +362,6 @@ print(trainer.evaluate())
 #     max_seq_length=2048,               # explicit truncation
 #     fp16=False,                        # bf16 is already enabled
 #     remove_unused_columns=False,       # keep "messages"
-#     label_names=[],                    # <-- **fixes the PeftModel warning**
 #     ddp_find_unused_parameters=False,  # <-- removes the DDP warning
 #     dataset_text_field="messages"
 #     # max_seq_length=1028,  # Add this for truncation
