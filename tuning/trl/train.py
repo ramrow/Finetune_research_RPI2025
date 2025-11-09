@@ -102,6 +102,7 @@ training_args = SFTConfig(
     packing=False,
     remove_unused_columns=False,
     ddp_find_unused_parameters=False,
+    max_seq_length=2048,
 )
 
 # -------------------------------------------------
@@ -113,7 +114,6 @@ trainer = SFTTrainer(
     train_dataset=train_ds,
     eval_dataset=eval_ds,
     processing_class=tokenizer,
-    max_seq_length=2048,
     formatting_func=formatting_func,     # ← applies chat template
     # NO data_collator → default handles padding + masking
 )
