@@ -79,7 +79,7 @@ template =  """ {%- if tools %}
         {%- generation -%}
             {{- message.content }}
         {%- endgeneration -%}
-        {{- '<|im_end|>' + '\n' }}
+        {{- '<|im_im_end|>' + '\n' }}
     {%- elif message.role == "assistant" %}
         {{- '<|im_start|>' + message.role }}
         {%- generation -%}
