@@ -86,6 +86,7 @@ training_args = SFTConfig(
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=4,
     assistant_only_loss=True,  # Now valid!
+    use_liger_kernel = False,
     optim="paged_adamw_32bit",
     logging_steps=25,
     learning_rate=5.11e-4,
