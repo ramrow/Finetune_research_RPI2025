@@ -92,7 +92,7 @@ training_args = SFTConfig(
     eval_strategy="epoch",
     save_strategy="epoch",
     max_seq_length=1028,
-    # assistant_only_loss=True,  # REMOVE THIS — conflicts with collator
+    assistant_only_loss=True,  # REMOVE THIS — conflicts with collator
 )
 
 # Trainer
@@ -103,7 +103,7 @@ trainer = SFTTrainer(
     eval_dataset=test_ds,          # RAW dataset
     processing_class=tokenizer,
     formatting_func=formatting_func,
-    data_collator=collator,        # This does the masking
+    # data_collator=collator,        # This does the masking
     # DO NOT pre-tokenize
 )
 
