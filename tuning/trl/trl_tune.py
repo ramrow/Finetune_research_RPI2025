@@ -50,7 +50,7 @@ def formatting_func(example):
     messages = [
         {"role": "system", "content": example["system_prompt"]},
         {"role": "user", "content": example["user_prompt"]},
-        {"role": "assistant", "content": example["assistant_response"]},
+        {"role": "assistant", "content": example["file_content"]},
     ]
     # SFTTrainer will apply the tokenizer's chat template to this list of messages
     return {"messages": messages}
