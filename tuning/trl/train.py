@@ -125,7 +125,7 @@ test_ds = test_ds.remove_columns([
     "case_domain", "user_requirement", "file_content", "case_category", "case_solver"
 ])
 
-tokenizer.chat_template = template
+# tokenizer.chat_template = template
 
 # LoRA config
 peft_params = LoraConfig(
