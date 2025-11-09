@@ -66,7 +66,7 @@ ds = ds.map(
 )
 
 # 2. Create the special collator that masks everything before the assistant
-response_template = "<|im_start|>assistant\n"   # exact string Qwen uses for assistant
+response_template = "<|im_start|>assistant\\n"   # exact string Qwen uses for assistant
 
 data_collator = DataCollatorForCompletionOnlyLM(
     tokenizer=tokenizer,
