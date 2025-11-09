@@ -96,7 +96,7 @@ trainer = SFTTrainer(
     args=training_args,
     train_dataset=ds["train"],
     eval_dataset=ds["test"],
-    tokenizer=tokenizer,
+    processing_class=tokenizer,
     formatting_func=formatting_func,
     data_collator=collator,  # This does assistant-only masking
 )
