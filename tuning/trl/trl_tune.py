@@ -23,7 +23,7 @@ quant_config = BitsAndBytesConfig(
     bnb_4bit_use_double_quant=True,
 )
 
-ds = (load_dataset("finalform/foamGPT",)).shuffle()
+ds = (load_dataset("LeoYML/FoamGPT",)).shuffle()
 model="Qwen/Qwen2.5-7B-Instruct"
 new_model = "foamqwen"
 
