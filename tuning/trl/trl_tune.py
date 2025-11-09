@@ -97,6 +97,7 @@ trainer = SFTTrainer(
     eval_dataset=ds['test'],
     args=training_args,
     processing_class=tokenizer,
+    formatting_func=formatting_func,
 )
 
 trainer.train()
