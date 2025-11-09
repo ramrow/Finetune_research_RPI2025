@@ -23,7 +23,7 @@ quant_config = BitsAndBytesConfig(
     bnb_4bit_use_double_quant=True,
 )
 
-def apply_chat_template(example):
+def apply_template(example):
     messages = [
         {"role": "system", "content": example["system_prompt"]},
         {"role": "user", "content": example['user_prompt']},
@@ -65,56 +65,7 @@ tokenizer = AutoTokenizer.from_pretrained(model, trust_remote_code=True)
 tokenizer.return_tensors = "pt"
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
-tokenizer.chat_template = """Hugging Face's logo
-Hugging Face
-Models
-Datasets
-Spaces
-Community
-Docs
-Pricing
-
-
-finalform
-/
-foamQwen3-8B 
-
-like
-0
-PEFT
-TensorBoard
-Safetensors
-llama-factory
-lora
-Generated from Trainer
-
-License:
-other
-Model card
-Files and versions
-xet
-Training metrics
-Community
-Settings
-foamQwen3-8B
-/
-chat_template.jinja
-
-finalform's picture
-finalform
-Upload folder using huggingface_hub
-116c5a7
-verified
-3 months ago
-raw
-
-Copy download link
-history
-blame
-edit
-delete
-
-4.17 kB
+tokenizer.chat_template = """
 {%- if tools %}
     {{- '<|im_start|>system\n' }}
     {%- if messages[0].role == 'system' %}
@@ -206,8 +157,8 @@ delete
 {%- endif %}
 """
 
-train_ds = ds['train'].map(apply_chat_template)
-test_ds = ds['test'].map(apply_chat_template)
+train_ds = ds['train'].map(apply_template)
+test_ds = ds['test'].map(apply_template)
 tokenized_train_ds = train_ds.map(tokenize_data)
 tokenized_test_ds = test_ds.map(tokenize_data)
 tokenized_train_ds = tokenized_train_ds.remove_columns(["text", "system_prompt", "user_prompt", "folder_name", "file_name", "case_name", "case_domain", "user_requirement", "file_content", "case_category", "case_solver"])
