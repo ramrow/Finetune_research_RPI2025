@@ -1,15 +1,19 @@
 import os
 import torch
 from datasets import load_dataset
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    BitsAndBytesConfig,
+)
 from peft import LoraConfig, get_peft_model
-from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
+from trl import SFTTrainer, SFTConfig
 
 # Device setup
-local_rank = int(os.getenv("LOCAL_RANK", "0"))
+local_rank = int(os.getenv("LOCAL_RANK", "0"))  # Cast to int for safety
 device_string = f"cuda:{local_rank}"
 
-# Quantization
+# Quantization config
 quant_config = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_quant_type="nf4",
@@ -17,29 +21,50 @@ quant_config = BitsAndBytesConfig(
     bnb_4bit_use_double_quant=True,
 )
 
-# Load model and tokenizer
+# Load model
 model_name = "Qwen/Qwen2.5-7B-Instruct"
-model = AutoModelForCausalLM.from_pretrained(
+md = AutoModelForCausalLM.from_pretrained(
     model_name,
     quantization_config=quant_config,
     device_map={'': device_string},
     trust_remote_code=True,
     torch_dtype=torch.bfloat16,
 )
-model.config.use_cache = False
-model.config.pretraining_tp = 1
+md.config.use_cache = False
+md.config.pretraining_tp = 1
 
+# Load tokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
-# Load dataset
+# Load and prepare dataset (RAW — NO pre-tokenization!)
 ds = load_dataset("finalform/foamGPT").shuffle()
-train_ds = ds['train']
-test_ds = ds['test']
+
+# NEW: Convert to conversational format (add "messages" column)
+def to_conversational(example):
+    return {
+        "messages": [
+            {"role": "system", "content": example["system_prompt"]},
+            {"role": "user", "content": example["user_prompt"]},
+            {"role": "assistant", "content": example["file_content"]}  # Include full response
+        ]
+    }
+
+train_ds = ds['train'].map(to_conversational)
+test_ds = ds['test'].map(to_conversational)
+# Optional: Remove unused columns for cleanliness (but keep "messages")
+train_ds = train_ds.remove_columns([
+    "system_prompt", "user_prompt", "folder_name", "file_name", "case_name",
+    "case_domain", "user_requirement", "file_content", "case_category", "case_solver"
+])
+test_ds = test_ds.remove_columns([
+    "system_prompt", "user_prompt", "folder_name", "file_name", "case_name",
+    "case_domain", "user_requirement", "file_content", "case_category", "case_solver"
+])
 
 # LoRA config
-peft_config = LoraConfig(
+peft_params = LoraConfig(
     lora_alpha=16,
     lora_dropout=0.1,
     r=64,
@@ -47,37 +72,16 @@ peft_config = LoraConfig(
     task_type="CAUSAL_LM",
     target_modules="all-linear",
 )
-model = get_peft_model(model, peft_config)
+peft_md = get_peft_model(md, peft_params)
 
-# --- CRITICAL: Use formatting_func to build full prompt + response ---
-def formatting_func(example):
-    messages = [
-        {"role": "system", "content": example["system_prompt"]},
-        {"role": "user", "content": example["user_prompt"]},
-        {"role": "assistant", "content": example["file_content"]}  # INCLUDE RESPONSE
-    ]
-    return tokenizer.apply_chat_template(
-        messages,
-        tokenize=False,
-        add_generation_prompt=False  # We include full assistant, so no need
-    ) + tokenizer.eos_token
-
-# --- Use DataCollatorForCompletionOnlyLM to mask prompt ---
-response_template = "<|im_start|>assistant"  # Qwen2.5 uses this
-# Or: "<|im_start|>assistant\r\n" — check with print(repr(...))
-
-collator = DataCollatorForCompletionOnlyLM(
-    response_template=response_template,
-    tokenizer=tokenizer
-)
-
-# Training args
+# Training args (keep assistant_only_loss=True — now it works!)
 training_args = SFTConfig(
     output_dir="foamqwen",
     num_train_epochs=7,
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=4,
+    assistant_only_loss=True,  # Now valid!
     optim="paged_adamw_32bit",
     logging_steps=25,
     learning_rate=5.11e-4,
@@ -88,24 +92,23 @@ training_args = SFTConfig(
     group_by_length=True,
     lr_scheduler_type="cosine",
     report_to="tensorboard",
-    packing=False,
+    packing=False,  # Recommended for clean masking
     eval_strategy="epoch",
     save_strategy="epoch",
-    max_seq_length=1028,
-    # assistant_only_loss=True,  # REMOVE THIS — conflicts with collator
+    max_seq_length=1028,  # Add this for truncation
 )
 
-# Trainer
+# Trainer (use RAW datasets; TRL handles tokenization + masking)
 trainer = SFTTrainer(
-    model=model,
+    model=peft_md,
+    train_dataset=train_ds,     # RAW with "messages"
+    eval_dataset=test_ds,       # RAW with "messages"
     args=training_args,
-    train_dataset=train_ds,        # RAW dataset
-    eval_dataset=test_ds,          # RAW dataset
-    processing_class=tokenizer,
-    formatting_func=formatting_func,
-    data_collator=collator,        # This does the masking
-    # DO NOT pre-tokenize
+    processing_class=tokenizer,        # Handles apply_chat_template internally
+    # NO data_collator, formatting_func, or pre-tokenized data!
 )
 
 trainer.train()
-trainer.save_model("foamqwen")
+trainer.model.save_pretrained("foamqwen")
+tokenizer.save_pretrained("foamqwen")  # Save tokenizer (not processing_class)
+trainer.evaluate()
