@@ -7,7 +7,7 @@ from transformers import (
     BitsAndBytesConfig,
 )
 from peft import LoraConfig, get_peft_model
-from trl import SFTTrainer, SFTConfig
+from trl import SFTTrainer, SFTConfig, DataCollatorForLanguageModeling
 
 # Device setup
 local_rank = int(os.getenv("LOCAL_RANK", "0"))  # Cast to int for safety
@@ -79,6 +79,12 @@ peft_params = LoraConfig(
 )
 peft_md = get_peft_model(md, peft_params)
 
+data_collator = DataCollatorForLanguageModeling(
+    tokenizer=tokenizer,
+    mlm=False,  # Causal LM
+    return_tensors="pt",
+)
+
 # Training args (keep assistant_only_loss=True — now it works!)
 training_args = SFTConfig(
     output_dir="foamqwen",
@@ -116,37 +122,11 @@ trainer = SFTTrainer(
     eval_dataset=test_ds,       # RAW with "messages"
     args=training_args,
     processing_class=tokenizer,        # Handles apply_chat_template internally
+    data_collator=data_collator,
     # NO data_collator, formatting_func, or pre-tokenized data!
 )
 
-print("\n=== DEBUG BATCH INSPECTION ===")
-batch = next(iter(trainer.get_train_dataloader()))
-
-print("Batch keys:", batch.keys())
-# Expected: dict_keys(['input_ids', 'attention_mask', 'labels'])
-
-# 1. Show attention_mask of the first example
-print("\nattention_mask[0] (first 64 tokens):")
-print(batch["attention_mask"][0][:64].tolist())
-
-# 2. Show how many real tokens vs padding
-real_tokens = batch["attention_mask"].sum().item()
-total_tokens = batch["attention_mask"].numel()
-print(f"\nReal tokens / total tokens: {real_tokens} / {total_tokens} "
-      f"({real_tokens/total_tokens:.3%})")
-
-# 3. Show assistant-only mask ratio
-assistant_tokens = (batch["labels"] != -100).sum().item()
-print(f"Assistant tokens / real tokens: {assistant_tokens} / {real_tokens} "
-      f"({assistant_tokens/real_tokens:.3%})")
-
-# -------------------------------------------------
-#  CONTINUE TRAINING
-# -------------------------------------------------
 trainer.train()
-
-
-# trainer.train()
-# trainer.model.save_pretrained("foamqwen")
-# tokenizer.save_pretrained("foamqwen")  # Save tokenizer (not processing_class)
-# trainer.evaluate()
+trainer.model.save_pretrained("foamqwen")
+tokenizer.save_pretrained("foamqwen")  # Save tokenizer (not processing_class)
+trainer.evaluate()
