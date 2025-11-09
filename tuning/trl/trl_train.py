@@ -11,10 +11,10 @@ from transformers import (
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
-torch.set_grad_enabled(True)
-# local_rank = os.getenv("LOCAL_RANK")
-# device_string = "cuda:" + str(local_rank)
+# os.environ["CUDA_VISIBLE_DEVICES"]="0"
+# torch.set_grad_enabled(True)
+local_rank = os.getenv("LOCAL_RANK")
+device_string = "cuda:" + str(local_rank)
 
 quant_config = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -35,8 +35,8 @@ def apply_chat_template(example):
     return {"text": prompt}
 
 def tokenize_data(example):
-    tokens = tokenizer(example['text'], padding="longest",)
-    # tokens = tokenizer(example['text'], padding="max_length", max_length=1028, truncation=True)
+    # tokens = tokenizer(example['text'], padding="longest",)
+    tokens = tokenizer(example['text'], padding="max_length", max_length=1028, truncation=True)
     tokens['labels'] = [
         -100 if token == tokenizer.pad_token_id else token for token in tokens['input_ids']
     ]
