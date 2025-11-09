@@ -116,7 +116,8 @@ trainer = SFTTrainer(
     eval_dataset=ds['test'],
     args=training_args,
     processing_class=tokenizer,
-    data_collator=data_collator
+    data_collator=data_collator,
+    response_template="<|im_start|>assistant\n"
 )
 
 trainer.train()
