@@ -102,7 +102,7 @@ training_args = SFTConfig(
     group_by_length=True,
     lr_scheduler_type="constant",
     report_to="tensorboard",
-    packing=True,
+    packing=False,
     eval_strategy="epoch",
     save_strategy="epoch",
     # dataset_text_field="messages"
@@ -117,7 +117,6 @@ trainer = SFTTrainer(
     args=training_args,
     processing_class=tokenizer,
     data_collator=data_collator,
-    response_template="<|im_start|>assistant\n"
 )
 
 trainer.train()
