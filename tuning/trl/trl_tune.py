@@ -45,15 +45,34 @@ if tokenizer.pad_token is None:
     tokenizer.pad_token = tokenizer.eos_token 
 tokenizer.padding_side = "right"
 
-def formatting_func(example):
-    # 'example' is a row from the dataset (a dictionary)
+def apply_chat_template(example):
     messages = [
         {"role": "system", "content": example["system_prompt"]},
-        {"role": "user", "content": example["user_prompt"]},
+        {"role": "user",   "content": example["user_prompt"]},
         {"role": "assistant", "content": example["file_content"]},
     ]
-    # SFTTrainer will apply the tokenizer's chat template to this list of messages
-    return {"messages": messages}
+    text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=False,   # we want the answer included
+    )
+    return {"text": text + tokenizer.eos_token}   # make sure EOS is there
+
+ds = ds.map(
+    apply_chat_template,
+    remove_columns=ds["train"].column_names,
+    num_proc=8,
+    desc="Applying chat template",
+)
+
+# 2. Create the special collator that masks everything before the assistant
+response_template = "<|im_start|>assistant\n"   # exact string Qwen uses for assistant
+
+data_collator = DataCollatorForCompletionOnlyLM(
+    tokenizer=tokenizer,
+    response_template=response_template,   # loss only after this
+    instruction_template=None,            # optional, if you want to mask system+user too
+)
 
 peft_params = LoraConfig(
     lora_alpha=16,
@@ -97,7 +116,7 @@ trainer = SFTTrainer(
     eval_dataset=ds['test'],
     args=training_args,
     processing_class=tokenizer,
-    formatting_func=formatting_func,
+    data_collator=data_collator
 )
 
 trainer.train()
