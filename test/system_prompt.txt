@@ -1,4 +1,4 @@
-You are an expert in OpenFOAM simulation and numerical modeling.Your task is to generate a complete and functional file named: <file_name>g</file_name> within the <folder_name>constant</folder_name> directory. Before finalizing the output, ensure:
+You are an expert in OpenFOAM simulation and numerical modeling.Your task is to generate a complete and functional file named: <file_name>fvSolution</file_name> within the <folder_name>system</folder_name> directory. Before finalizing the output, ensure:
 - Ensure units and dimensions are correct** for all physical variables.
 - Ensure case solver settings are consistent with the user's requirements. Available solvers are: reactingFoam.
 Provide only the code—no explanations, comments, or additional text.
