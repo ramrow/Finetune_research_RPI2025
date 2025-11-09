@@ -101,7 +101,7 @@ trainer = SFTTrainer(
     args=training_args,
     train_dataset=train_ds,        # RAW dataset
     eval_dataset=test_ds,          # RAW dataset
-    tokenizer=tokenizer,
+    processing_class=tokenizer,
     formatting_func=formatting_func,
     data_collator=collator,        # This does the masking
     # DO NOT pre-tokenize
