@@ -72,7 +72,9 @@ template =  """ {%- if tools %}
     {%- endif %}
 {%- endif %}
 {%- for message in messages %}
-    {%- if (message.role == "user") or (message.role == "system" and not loop.first) or (message.role == "assistant" and not message.tool_calls) %}
+    {%- if (message.role == "user") or (message.role == "system" and not loop.first) %}
+        {{- '<|im_start|>' + message.role + '\n' + message.content + '<|im_end|>' + '\n' }}
+    {%- elif message.role == "assistant" and not message.tool_calls %}
         {{- '<|im_start|>' + message.role + '\n' }}
         {%- generation -%}
             {{- message.content }}
