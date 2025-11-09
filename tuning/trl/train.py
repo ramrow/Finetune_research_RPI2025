@@ -59,7 +59,7 @@ def tokenize_and_mask(example):
     tokenized = tokenizer(
         full_text,
         truncation=True,
-        max_length=1028,
+        max_length=2048,
         padding="max_length",
         return_attention_mask=True,
     )
