@@ -163,18 +163,13 @@ trainer = SFTTrainer(
 # -------------------------------------------------
 # 7. DEBUG: Check masking
 # -------------------------------------------------
-print("\n=== DEBUG BATCH ===")
-batch = next(iter(trainer.get_train_dataloader()))
-print("Keys:", batch.keys())
-real = batch["attention2024attention_mask"].sum().item()
-assist = (batch["labels"] != -100).sum().item()
-print(f"Assistant token ratio: {assist/real:.1%}")
 
 # -------------------------------------------------
 # 8. TRAIN
 # -------------------------------------------------
 trainer.train()
 trainer.save_model("foamqwen")
+tokenizer.save_pretrained("foamqwen")
 print(trainer.evaluate())
 
 
