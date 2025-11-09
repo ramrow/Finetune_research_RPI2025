@@ -49,7 +49,7 @@ def formatting_func(example):
     ) + tokenizer.eos_token
 
 # Collator with EXACT response template
-response_template = "<|im_start|>assistant\n"  # Qwen2.5 uses \r\n
+response_template = "<|im_start|>assistant\r\n"  # Qwen2.5 uses \r\n
 
 collator = DataCollatorForCompletionOnlyLM(
     response_template=response_template,
