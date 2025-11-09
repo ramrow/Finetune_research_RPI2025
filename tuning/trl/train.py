@@ -62,7 +62,7 @@ test_ds = test_ds.remove_columns([
     "system_prompt", "user_prompt", "folder_name", "file_name", "case_name",
     "case_domain", "user_requirement", "file_content", "case_category", "case_solver"
 ])
-
+print(tokenizer.chat_template)
 # LoRA config
 peft_params = LoraConfig(
     lora_alpha=16,
