@@ -104,6 +104,7 @@ training_args = SFTConfig(
     remove_unused_columns=False,       # keep "messages"
     label_names=[],                    # <-- **fixes the PeftModel warning**
     ddp_find_unused_parameters=False,  # <-- removes the DDP warning
+    dataset_text_field="messages"
     # max_seq_length=1028,  # Add this for truncation
 )
 
