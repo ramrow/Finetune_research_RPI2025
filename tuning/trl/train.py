@@ -53,8 +53,8 @@ def to_conversational(example):
 
 template =  """ {%- if tools %}
     {{- '<|im_start|>system\n' }}
-    {%- if messages[0]['role'] == 'system' %}
-        {{- messages[0]['content'] }}
+    {%- if messages | first and messages | first | attr('role') == 'system' %}
+        {{- messages | first | attr('content') }}
     {%- else %}
         {{- 'You are Qwen, created by Alibaba Cloud. You are a helpful assistant.' }}
     {%- endif %}
@@ -65,21 +65,15 @@ template =  """ {%- if tools %}
     {%- endfor %}
     {{- "\n</tools>\n\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\n<tool_call>\n{\"name\": <function-name>, \"arguments\": <args-json-object>}\n</tool_call><|im_end|>\n" }}
 {%- else %}
-    {%- if messages[0]['role'] == 'system' %}
-        {{- '<|im_start|>system\n' + messages[0]['content'] + '<|im_end|>\n' }}
+    {%- if messages | first and messages | first | attr('role') == 'system' %}
+        {{- '<|im_start|>system\n' + messages | first | attr('content') + '<|im_end|>\n' }}
     {%- else %}
         {{- '<|im_start|>system\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\n' }}
     {%- endif %}
 {%- endif %}
 {%- for message in messages %}
-    {%- if (message.role == "user") or (message.role == "system" and not loop.first) %}
+    {%- if (message.role == "user") or (message.role == "system" and not loop.first) or (message.role == "assistant" and not message.tool_calls) %}
         {{- '<|im_start|>' + message.role + '\n' + message.content + '<|im_end|>' + '\n' }}
-    {%- elif message.role == "assistant" and not message.tool_calls %}
-        {{- '<|im_start|>' + message.role + '\n' }}
-        {%- generation -%}
-            {{- message.content }}
-        {%- endgeneration -%}
-        {{- '<|im_im_end|>' + '\n' }}
     {%- elif message.role == "assistant" %}
         {{- '<|im_start|>' + message.role }}
         {%- generation -%}
