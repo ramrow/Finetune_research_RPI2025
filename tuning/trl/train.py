@@ -45,7 +45,7 @@ def formatting_func(example):
     return tokenizer.apply_chat_template(
         messages,
         tokenize=False,
-        add_generation_prompt=False  # Full response included
+        add_generation_prompt=True  # Full response included
     ) + tokenizer.eos_token
 
 # Collator with EXACT response template
