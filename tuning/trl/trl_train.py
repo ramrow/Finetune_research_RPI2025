@@ -98,6 +98,7 @@ training_args = SFTConfig(
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=4, 
+    assistant_only_loss=True,
     # gradient_checkpointing=True,
     optim="paged_adamw_32bit",
     # save_steps=750,    
@@ -121,7 +122,7 @@ peft_md = get_peft_model(md, peft_params)
 
 trainer = SFTTrainer(
     model=peft_md,
-    data_collator=collator,
+    # data_collator=collator,
     train_dataset=tokenized_train_ds,
     eval_dataset=tokenized_test_ds,
     args=training_args,
