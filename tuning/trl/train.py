@@ -48,10 +48,6 @@ def to_prompt_completion(example):
         {"role": "assistant", "content": example["file_content"]}
     ]
     return {"prompt": prompt, "completion": completion}
-
-train_ds = train_raw.map(to_prompt_completion, remove_columns=train_raw.column_names)
-eval_ds  = eval_raw.map (to_prompt_completion, remove_columns=eval_raw.column_names)
-
 # -------------------------------------------------
 # 3. Formatting function (applies chat template + masking)
 # -------------------------------------------------
@@ -63,6 +59,10 @@ def formatting_func(example):
     )
     return full_text
 
+train_ds = (train_raw.map(to_prompt_completion, remove_columns=train_raw.column_names)).map(formatting_func)
+eval_ds  = (eval_raw.map (to_prompt_completion, remove_columns=eval_raw.column_names)).map(formatting_func)
+
+print(train_ds)
 # -------------------------------------------------
 # 4. LoRA
 # -------------------------------------------------
