@@ -23,7 +23,7 @@ quant_config = BitsAndBytesConfig(
     bnb_4bit_use_double_quant=True,
 )
 
-ds = (load_dataset("finalform/foamGPT-old",)).shuffle()
+ds = (load_dataset("finalform/foamGPT",)).shuffle()
 model="Qwen/Qwen2.5-7B-Instruct"
 new_model = "foamqwen"
 
@@ -105,7 +105,7 @@ training_args = SFTConfig(
     packing=False,
     eval_strategy="epoch",
     save_strategy="epoch",
-    max_seq_length=4098,
+    max_seq_length=320000,
     # dataset_text_field="messages"
 )
 
