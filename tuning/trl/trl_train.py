@@ -11,10 +11,10 @@ from transformers import (
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig
 
-# os.environ["CUDA_VISIBLE_DEVICES"]="0"
-# torch.set_grad_enabled(True)
-local_rank = os.getenv("LOCAL_RANK")
-device_string = "cuda:" + str(local_rank)
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
+torch.set_grad_enabled(True)
+# local_rank = os.getenv("LOCAL_RANK")
+# device_string = "cuda:" + str(local_rank)
 
 quant_config = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -43,7 +43,7 @@ def tokenize_data(example):
     return tokens
 
 
-ds = (load_dataset("LeoYML/FoamGPT",)).shuffle()
+ds = (load_dataset("finalform/foamGPT",)).shuffle()
 model="Qwen/Qwen2.5-7B-Instruct"
 new_model = "foamqwen"
 
@@ -52,8 +52,8 @@ new_model = "foamqwen"
 md = AutoModelForCausalLM.from_pretrained(
     model,
     quantization_config=quant_config,
-    # device_map="auto",
-    device_map={'':device_string},
+    device_map="auto",
+    # device_map={'':device_string},
     trust_remote_code=True,
     torch_dtype=torch.bfloat16,
 )
