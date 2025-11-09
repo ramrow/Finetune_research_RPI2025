@@ -52,8 +52,8 @@ new_model = "foamqwen"
 md = AutoModelForCausalLM.from_pretrained(
     model,
     quantization_config=quant_config,
-    device_map="auto",
-    # device_map={'':device_string},
+    # device_map="auto",
+    device_map={'':device_string},
     trust_remote_code=True,
     torch_dtype=torch.bfloat16,
 )
