@@ -56,6 +56,7 @@ def apply_chat_template(example):
         tokenize=False,
         add_generation_prompt=False,   # we want the answer included
     )
+    print(text)
     return {"text": text + tokenizer.eos_token}   # make sure EOS is there
 
 ds = ds.map(
