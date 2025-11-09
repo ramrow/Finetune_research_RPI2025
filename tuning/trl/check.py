@@ -69,6 +69,7 @@ tokenizer.padding_side = "right"
 train_ds = ds['train'].map(apply_chat_template)
 print(train_ds)
 print(train_ds['text'])
+print(train_ds['text'][0])
 test_ds = ds['test'].map(apply_chat_template)
 tokenized_train_ds = train_ds.map(tokenize_data)
 tokenized_test_ds = test_ds.map(tokenize_data)
