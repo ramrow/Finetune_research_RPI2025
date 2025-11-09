@@ -7,7 +7,7 @@ from transformers import (
     BitsAndBytesConfig,
 )
 from peft import LoraConfig, get_peft_model
-from trl import SFTTrainer, SFTConfig, DataCollatorForLanguageModeling
+from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 
 # Device setup
 local_rank = int(os.getenv("LOCAL_RANK", "0"))  # Cast to int for safety
@@ -79,7 +79,7 @@ peft_params = LoraConfig(
 )
 peft_md = get_peft_model(md, peft_params)
 
-data_collator = DataCollatorForLanguageModeling(
+data_collator = DataCollatorForCompletionOnlyLM(
     tokenizer=tokenizer,
     mlm=False,  # Causal LM
     return_tensors="pt",
