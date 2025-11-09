@@ -36,10 +36,11 @@ tokenizer.padding_side = "right"
 # -------------------------------------------------
 # 2. Dataset → prompt + completion
 # -------------------------------------------------
-raw = load_dataset("finalform/foamGPT", split="train").train_test_split(test_size=0.1, seed=42)
-train_raw, eval_raw = raw["train"], raw["test"]
+raw = load_dataset("finalform/foamGPT")
+# train_raw, eval_raw = raw["train"], raw["test"]
 
-def to_prompt_completion(example):
+def tokenize_and_mask(example):
+    # Build prompt and completion
     prompt = [
         {"role": "system", "content": example["system_prompt"]},
         {"role": "user",   "content": example["user_prompt"]},
@@ -47,21 +48,62 @@ def to_prompt_completion(example):
     completion = [
         {"role": "assistant", "content": example["file_content"]}
     ]
-    return {"prompt": prompt, "completion": completion}
 
-train_ds = train_raw.map(to_prompt_completion, remove_columns=train_raw.column_names)
-eval_ds  = eval_raw.map (to_prompt_completion, remove_columns=eval_raw.column_names)
+    # Apply chat template
+    prompt_text = tokenizer.apply_chat_template(prompt, tokenize=False, add_generation_prompt=True)
+    completion_text = tokenizer.apply_chat_template(completion, tokenize=False, add_generation_prompt=False)
 
-# -------------------------------------------------
-# 3. Formatting function (applies chat template + masking)
-# -------------------------------------------------
-def formatting_func(example):
-    # Build full text
-    full_text = (
-        tokenizer.apply_chat_template(example["prompt"], tokenize=False, add_generation_prompt=True) +
-        tokenizer.apply_chat_template(example["completion"], tokenize=False, add_generation_prompt=False)
+    full_text = prompt_text + completion_text
+
+    # Tokenize
+    tokenized = tokenizer(
+        full_text,
+        truncation=True,
+        max_length=1028,
+        padding="max_length",
+        return_attention_mask=True,
     )
-    return full_text
+
+    # Find split point
+    prompt_ids = tokenizer.apply_chat_template(prompt, tokenize=True, add_generation_prompt=True)
+    split_idx = len(prompt_ids)
+
+    # Create labels: -100 on prompt, real on completion
+    input_ids = tokenized["input_ids"]
+    labels = [-100] * split_idx + input_ids[split_idx:]
+
+    return {
+        "input_ids": input_ids,
+        "attention_mask": tokenized["attention_mask"],
+        "labels": labels,
+    }
+
+train_ds = raw["train"].map(tokenize_and_mask, remove_columns=raw["train"].column_names)
+eval_ds  = raw["test"].map (tokenize_and_mask, remove_columns=raw["test"].column_names)
+
+# def to_prompt_completion(example):
+#     prompt = [
+#         {"role": "system", "content": example["system_prompt"]},
+#         {"role": "user",   "content": example["user_prompt"]},
+#     ]
+#     completion = [
+#         {"role": "assistant", "content": example["file_content"]}
+#     ]
+#     return {"prompt": prompt, "completion": completion}
+
+# train_ds = train_raw.map(to_prompt_completion, remove_columns=train_raw.column_names)
+# eval_ds  = eval_raw.map (to_prompt_completion, remove_columns=eval_raw.column_names)
+
+# # -------------------------------------------------
+# # 3. Formatting function (applies chat template + masking)
+# # -------------------------------------------------
+# def formatting_func(example):
+#     # Build full text
+#     full_text = (
+#         tokenizer.apply_chat_template(example["prompt"], tokenize=False, add_generation_prompt=True) +
+#         tokenizer.apply_chat_template(example["completion"], tokenize=False, add_generation_prompt=False)
+#     )
+#     return full_text
 
 # -------------------------------------------------
 # 4. LoRA
@@ -114,7 +156,7 @@ trainer = SFTTrainer(
     train_dataset=train_ds,
     eval_dataset=eval_ds,
     processing_class=tokenizer,
-    formatting_func=formatting_func,     # ← applies chat template
+    # formatting_func=formatting_func,     # ← applies chat template
     # NO data_collator → default handles padding + masking
 )
 
