@@ -11,7 +11,7 @@ import os
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-model_name = "finalform/foamQwen2.5-7B-Instruct-fp16"
+model_name = "finalform/foamQwen2.5-7B-Instruct-Assistant"
 
 # load the tokenizer and the model
 tokenizer = AutoTokenizer.from_pretrained(model_name)
