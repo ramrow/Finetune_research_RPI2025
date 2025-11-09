@@ -48,6 +48,10 @@ def to_prompt_completion(example):
         {"role": "assistant", "content": example["file_content"]}
     ]
     return {"prompt": prompt, "completion": completion}
+
+train_ds = train_raw.map(to_prompt_completion, remove_columns=train_raw.column_names)
+eval_ds  = eval_raw.map (to_prompt_completion, remove_columns=eval_raw.column_names)
+
 # -------------------------------------------------
 # 3. Formatting function (applies chat template + masking)
 # -------------------------------------------------
@@ -59,10 +63,6 @@ def formatting_func(example):
     )
     return full_text
 
-train_ds = (train_raw.map(to_prompt_completion, remove_columns=train_raw.column_names)).map(formatting_func)
-eval_ds  = (eval_raw.map (to_prompt_completion, remove_columns=eval_raw.column_names)).map(formatting_func)
-
-print(train_ds)
 # -------------------------------------------------
 # 4. LoRA
 # -------------------------------------------------
@@ -85,14 +85,14 @@ training_args = SFTConfig(
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=8,
-    # assistant_only_loss=True,           # ← ENABLED
-    completion_only_loss=True,
+    assistant_only_loss=True,           # ← ENABLED
+    # completion_only_loss=True,
     optim="paged_adamw_32bit",
-    learning_rate=2e-4,
-    weight_decay=0.01,
+    learning_rate=5.11e-4,
+    weight_decay=0.03,
     bf16=True,
     fp16=False,
-    max_grad_norm=1.0,
+    max_grad_norm=0.5,
     warmup_ratio=0.03,
     lr_scheduler_type="cosine",
     logging_steps=10,
