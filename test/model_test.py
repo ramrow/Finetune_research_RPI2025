@@ -45,7 +45,7 @@ model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 generated_ids = model.generate(
     **model_inputs,
     max_new_tokens=1000,
-    temperature=0.1,
+    temperature=0.01,
     repetition_penalty=1.1,
 
 )
