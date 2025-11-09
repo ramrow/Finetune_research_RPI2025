@@ -71,12 +71,13 @@ template =  """ {%- if tools %}
         {{- '<|im_start|>system\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\n' }}
     {%- endif %}
 {%- endif %}
+
 {%- for message in messages %}
     {%- if (message.role == "user") or (message.role == "system" and not loop.first) or (message.role == "assistant" and not message.tool_calls) %}
-        {{- '<|im_start|>' + message.role + '\n' + message.content + '<|im_end|>' + '\n' }}
+        {{- '<|im_start|>' + message.role + '\n' + message.content + '<|im_end|>\n' }}
     {%- elif message.role == "assistant" %}
         {{- '<|im_start|>' + message.role }}
-        {%- generation -%}
+        {% generation %}
             {%- if message.content %}
                 {{- '\n' + message.content }}
             {%- endif %}
@@ -90,7 +91,7 @@ template =  """ {%- if tools %}
                 {{- tool_call.arguments | tojson }}
                 {{- '}\n</tool_call>' }}
             {%- endfor %}
-        {%- endgeneration -%}
+        {% endgeneration %}
         {{- '<|im_end|>\n' }}
     {%- elif message.role == "tool" %}
         {%- if (loop.index0 == 0) or (messages[loop.index0 - 1].role != "tool") %}
@@ -104,10 +105,11 @@ template =  """ {%- if tools %}
         {%- endif %}
     {%- endif %}
 {%- endfor %}
+
 {%- if add_generation_prompt %}
     {{- '<|im_start|>assistant\n' }}
-    {%- generation -%}
-    {%- endgeneration -%}
+    {% generation %}
+    {% endgeneration %}
 {%- endif %}
 """
 
