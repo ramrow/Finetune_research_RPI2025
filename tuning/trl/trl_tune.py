@@ -86,7 +86,7 @@ training_args = SFTConfig(
     packing=False,
     eval_strategy="epoch",
     save_strategy="epoch",
-    dataset_text_field="messages"
+    # dataset_text_field="messages"
 )
 
 peft_md = get_peft_model(md, peft_params)
