@@ -8,7 +8,7 @@ from transformers import (
     AutoModelForVision2Seq ,
 )
 from peft import LoraConfig, get_peft_model
-from trl import SFTTrainer, SFTConfig
+from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 torch.set_grad_enabled(True)
@@ -76,6 +76,13 @@ peft_params = LoraConfig(
     target_modules="all-linear"
 )
 
+response_template = "<|im_start|>assistant"
+
+collator = DataCollatorForCompletionOnlyLM(
+    response_template=response_template,
+    tokenizer=tokenizer
+)
+
 training_args = SFTConfig(
     output_dir="foamqwen",
     # resume_from_checkpoint="./qwen_results/checkpoint-",
@@ -106,6 +113,7 @@ peft_md = get_peft_model(md, peft_params)
 
 trainer = SFTTrainer(
     model=peft_md,
+    data_collator=collator,
     train_dataset=tokenized_train_ds,
     eval_dataset=tokenized_test_ds,
     args=training_args,
