@@ -88,10 +88,10 @@ peft_params = LoraConfig(
 training_args = SFTConfig(
     output_dir="foamqwen",
     num_train_epochs=7,
-    per_device_train_batch_size=1,
-    per_device_eval_batch_size=1,
+    per_device_train_batch_size=4,
+    per_device_eval_batch_size=4,
     gradient_checkpointing=True,
-    gradient_accumulation_steps=8, 
+    gradient_accumulation_steps=2, 
     optim="paged_adamw_32bit",
     logging_steps=25,
     learning_rate=5.11e-4, #3e-4
@@ -107,7 +107,12 @@ training_args = SFTConfig(
     packing=False,
     eval_strategy="epoch",
     save_strategy="epoch",
-    max_seq_length=16384,
+    max_seq_length=32768,
+
+    torch_compile=True,                     # 25–40% faster on A100
+    dataloader_num_workers=8,
+    dataloader_pin_memory=True,
+    dataloader_persistent_workers=True,
     # torch_compile=True,
     # dataset_text_field="messages"
 )
