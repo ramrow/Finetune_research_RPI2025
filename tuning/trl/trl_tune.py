@@ -91,6 +91,7 @@ training_args = SFTConfig(
     per_device_train_batch_size=1,
     per_device_eval_batch_size=1,
     gradient_checkpointing=True,
+    gradient_checkpointing_kwargs={"use_reentrant": False},
     gradient_accumulation_steps=8, 
     optim="paged_adamw_32bit",
     logging_steps=25,
@@ -109,7 +110,7 @@ training_args = SFTConfig(
     save_strategy="epoch",
     max_seq_length=42768,
 
-    # torch_compile=True,                     # 25–40% faster on A100
+    torch_compile=False,                     # 25–40% faster on A100
     dataloader_num_workers=8,
     dataloader_pin_memory=True,
     dataloader_persistent_workers=True,
