@@ -105,7 +105,7 @@ training_args = SFTConfig(
     packing=False,
     eval_strategy="epoch",
     save_strategy="epoch",
-    max_seq_length=32000,
+    max_seq_length=12000,
     # dataset_text_field="messages"
 )
 
