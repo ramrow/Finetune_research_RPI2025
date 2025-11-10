@@ -107,7 +107,7 @@ training_args = SFTConfig(
     packing=False,
     eval_strategy="epoch",
     save_strategy="epoch",
-    max_seq_length=32768,
+    max_seq_length=42768,
 
     # torch_compile=True,                     # 25–40% faster on A100
     dataloader_num_workers=8,
