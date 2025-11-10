@@ -105,7 +105,7 @@ training_args = SFTConfig(
 
     # === KEY: Enable assistant loss only ===
     dataset_text_field="text",
-    assistant_loss_only=True,          # <--- THIS REPLACES DataCollatorForCompletionOnlyLM
+    assistant_only_loss=True,          # <--- THIS REPLACES DataCollatorForCompletionOnlyLM
     # No need for response_template or collator!
 )
 
