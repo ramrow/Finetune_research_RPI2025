@@ -21,7 +21,7 @@ quant_config = BitsAndBytesConfig(
     bnb_4bit_quant_type="nf4",
     bnb_4bit_compute_dtype=torch.bfloat16,
     bnb_4bit_use_double_quant=True,
-    bnb_4bit_quant_storage=torch.uint8,
+    # bnb_4bit_quant_storage=torch.uint8,
 )
 
 ds = (load_dataset("finalform/foamGPT",)).shuffle()
@@ -108,7 +108,7 @@ training_args = SFTConfig(
     eval_strategy="epoch",
     save_strategy="epoch",
     max_seq_length=16384,
-    torch_compile=True,
+    # torch_compile=True,
     # dataset_text_field="messages"
 )
 
