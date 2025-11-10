@@ -21,6 +21,7 @@ quant_config = BitsAndBytesConfig(
     bnb_4bit_quant_type="nf4",
     bnb_4bit_compute_dtype=torch.bfloat16,
     bnb_4bit_use_double_quant=True,
+    bnb_4bit_quant_storage=torch.uint8,
 )
 
 ds = (load_dataset("finalform/foamGPT",)).shuffle()
@@ -87,9 +88,10 @@ peft_params = LoraConfig(
 training_args = SFTConfig(
     output_dir="foamqwen",
     num_train_epochs=7,
-    per_device_train_batch_size=2,
-    per_device_eval_batch_size=2,
-    gradient_accumulation_steps=4, 
+    per_device_train_batch_size=1,
+    per_device_eval_batch_size=1,
+    gradient_checkpointing=True,
+    gradient_accumulation_steps=8, 
     optim="paged_adamw_32bit",
     logging_steps=25,
     learning_rate=5.11e-4, #3e-4
@@ -100,12 +102,13 @@ training_args = SFTConfig(
     max_steps=-1,
     warmup_ratio=0.03,
     group_by_length=True,
-    lr_scheduler_type="constant",
+    lr_scheduler_type="cosine",
     report_to="tensorboard",
     packing=False,
     eval_strategy="epoch",
     save_strategy="epoch",
-    max_seq_length=8100,
+    max_seq_length=16384,
+    torch_compile=True,
     # dataset_text_field="messages"
 )
 
