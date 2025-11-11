@@ -76,12 +76,12 @@ peft_params = LoraConfig(
     target_modules="all-linear"
 )
 
-response_template = "<|im_start|>assistant"
+# response_template = "<|im_start|>assistant"
 
-collator = DataCollatorForCompletionOnlyLM(
-    response_template=response_template,
-    tokenizer=tokenizer
-)
+# collator = DataCollatorForCompletionOnlyLM(
+#     response_template=response_template,
+#     tokenizer=tokenizer
+# )
 
 training_args = SFTConfig(
     output_dir="foamqwen",
@@ -113,7 +113,7 @@ peft_md = get_peft_model(md, peft_params)
 
 trainer = SFTTrainer(
     model=peft_md,
-    data_collator=collator,
+    # data_collator=collator,
     train_dataset=tokenized_train_ds,
     eval_dataset=tokenized_test_ds,
     args=training_args,
