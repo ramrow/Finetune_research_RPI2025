@@ -22,7 +22,7 @@ quant_config = BitsAndBytesConfig(
 )
 
 # Load dataset
-ds = load_dataset("finalform/foamGPT").shuffle()
+ds = load_dataset("finalform/foamGPT-old").shuffle()
 
 # Model & Tokenizer
 model_name = "Qwen/Qwen2.5-7B-Instruct"
