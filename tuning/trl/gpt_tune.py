@@ -5,15 +5,16 @@ from transformers import AutoModelForCausalLM, Mxfp4Config
 from peft import LoraConfig, get_peft_model
 from trl import SFTConfig
 from trl import SFTTrainer
-from trl import DataCollatorForCompletionOnlyLM
 
 def conversational(example):
     return {
-        "messages": [
+        "prompt": [
             {"role": "system", "content": example["system_prompt"]},
             {"role": "user",   "content": example["user_prompt"]},
+        ],
+        "completion": [
             {"role": "assistant", "content": example["file_content"]},
-        ]
+        ],
     }
 
 ds = (load_dataset("finalform/foamGPT-old", )).shuffle()
@@ -70,19 +71,16 @@ training_args = SFTConfig(
     report_to="trackio",
     eval_strategy="epoch",
     save_strategy="epoch",
-    # assistant_only_loss = True,
+    completion_only_loss= True,
     # push_to_hub=True,
 )
 
-response_template = "<|start|>assistant"
-collator = DataCollatorForCompletionOnlyLM(response_template=response_template, tokenizer=tokenizer)
 
 trainer = SFTTrainer(
     model=peft_model,
     args=training_args,
     train_dataset=dataset['train'],
     eval_dataset=dataset['test'],
-    data_collator=collator,
     processing_class=tokenizer,
 )
 trainer.train()
