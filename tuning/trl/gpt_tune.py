@@ -22,7 +22,6 @@ dataset = ds.map(
 )
 
 tokenizer = AutoTokenizer.from_pretrained("openai/gpt-oss-20b")
-new_model = "foamGPT"
 tokenizer.return_tensors = "pt"
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
