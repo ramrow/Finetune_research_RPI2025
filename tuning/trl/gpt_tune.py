@@ -6,7 +6,20 @@ from peft import LoraConfig, get_peft_model
 from trl import SFTConfig
 from trl import SFTTrainer
 
-dataset = (load_dataset("finalform/foamGPT-old", )).shuffle()
+def conversational(example):
+    return {
+        "messages": [
+            {"role": "system", "content": example["system_prompt"]},
+            {"role": "user",   "content": example["user_prompt"]},
+            {"role": "assistant", "content": example["file_content"]},
+        ]
+    }
+
+ds = (load_dataset("finalform/foamGPT-old", )).shuffle()
+dataset = ds.map(
+    conversational,
+    remove_columns=ds["train"].column_names,
+)
 
 tokenizer = AutoTokenizer.from_pretrained("openai/gpt-oss-20b")
 new_model = "foamGPT"
