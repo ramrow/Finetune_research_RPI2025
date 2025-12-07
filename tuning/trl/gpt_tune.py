@@ -42,14 +42,12 @@ peft_model.print_trainable_parameters()
 
 training_args = SFTConfig(
     output_dir="foamGPT",
-    num_train_epochs=7,
-    per_device_train_batch_size=2,
-    per_device_eval_batch_size=2,
+    num_train_epochs=5,
+    per_device_train_batch_size=3,
+    per_device_eval_batch_size=3,
     learning_rate=5.11e-4,
     gradient_checkpointing=True,
-    num_train_epochs=1,
     logging_steps=1,
-    per_device_train_batch_size=4,
     gradient_accumulation_steps=4,
     max_length=2048,
     warmup_ratio=0.03,
@@ -58,7 +56,7 @@ training_args = SFTConfig(
     report_to="trackio",
     eval_strategy="epoch",
     save_strategy="epoch",
-    assistant_loss_only = True,
+    assistant_only_loss = True,
     # push_to_hub=True,
 )
 
@@ -66,7 +64,7 @@ trainer = SFTTrainer(
     model=peft_model,
     args=training_args,
     train_dataset=dataset['train'],
-    test_dataset=dataset['test'],
+    eval_dataset=dataset['test'],
     processing_class=tokenizer,
 )
 trainer.train()
