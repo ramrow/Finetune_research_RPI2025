@@ -5,6 +5,7 @@ from transformers import AutoModelForCausalLM, Mxfp4Config
 from peft import LoraConfig, get_peft_model
 from trl import SFTConfig
 from trl import SFTTrainer
+from trl import DataCollatorForCompletionOnlyLM
 
 def conversational(example):
     return {
@@ -21,6 +22,7 @@ dataset = ds.map(
     remove_columns=ds["train"].column_names,
 )
 
+new_model = "foamGPT"
 tokenizer = AutoTokenizer.from_pretrained("openai/gpt-oss-20b")
 tokenizer.return_tensors = "pt"
 tokenizer.pad_token = tokenizer.eos_token
@@ -68,15 +70,19 @@ training_args = SFTConfig(
     report_to="trackio",
     eval_strategy="epoch",
     save_strategy="epoch",
-    assistant_only_loss = True,
+    # assistant_only_loss = True,
     # push_to_hub=True,
 )
+
+response_template = "<|start|>assistant"
+collator = DataCollatorForCompletionOnlyLM(response_template=response_template, tokenizer=tokenizer)
 
 trainer = SFTTrainer(
     model=peft_model,
     args=training_args,
     train_dataset=dataset['train'],
     eval_dataset=dataset['test'],
+    data_collator=collator,
     processing_class=tokenizer,
 )
 trainer.train()
